@@ -1,0 +1,20 @@
+# Core Data Science Libraries
+pandas>=1.5.0
+numpy>=1.23.0
+
+# Machine Learning
+scikit-learn>=1.2.0
+torch>=2.0.0
+tensorflow>=2.12.0
+
+# Visualization
+matplotlib>=3.6.0
+plotly>=5.14.0
+
+# Utilities
+tqdm>=4.65.0
+
+# Optional but commonly used
+jupyter>=1.0.0
+ipykernel>=6.20.0
+
