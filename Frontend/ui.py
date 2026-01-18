@@ -167,4 +167,6 @@ elif page == "🔥 Song Swiper":
         if st.button("Restart Swiper"):
             st.session_state.current_index = 0
             st.session_state.liked_songs = []
-            st.rerun()
+            st.rerun() # Hello
+
+# Hello this is a github test
