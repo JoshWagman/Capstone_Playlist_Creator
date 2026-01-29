@@ -1,3 +1,4 @@
+# Use this to run the FastAPI "fastapi dev main.py"
 from fastapi import FastAPI
 import polars as pl
 from sklearn.metrics import DistanceMetric
