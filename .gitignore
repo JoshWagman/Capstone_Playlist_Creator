@@ -7,6 +7,9 @@ ids/
 spotify_million_playlist_dataset/
 
 
+# Python / virtual environment
+venv/
+
 # Other files and folders
 .settings/
 
@@ -15,6 +18,7 @@ spotify_million_playlist_dataset/
 *.air
 *.ipa
 *.apk
+
 
 # Project files, i.e. `.project`, `.actionScriptProperties` and `.flexProperties`
 # should NOT be excluded as they contain compiler settings and other important
