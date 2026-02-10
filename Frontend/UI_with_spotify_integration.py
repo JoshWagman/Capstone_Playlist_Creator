@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -231,3 +232,5 @@ elif page == "🔥 Song Swiper":
         if st.button("Restart"):
             st.session_state.current_index = 0
             st.rerun()
+=======
+>>>>>>> parent of b8ec23d (test)
