@@ -231,4 +231,3 @@ elif page == "🔥 Song Swiper":
         if st.button("Restart"):
             st.session_state.current_index = 0
             st.rerun()
-
