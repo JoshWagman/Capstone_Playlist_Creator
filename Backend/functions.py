@@ -1,22 +1,23 @@
 """
 Playlist building via latent-space proximity.
-User supplies 13 audio/popularity specs -> fake point in 12-d latent space -> recommend by nearest neighbors.
+
+User supplies 13 audio/popularity specs -> encode to 12-d latent point
+-> find nearest neighbors in pre-computed latent space -> return songs.
+
+Everything (encoder weights, scaler, OHE, latent space) is loaded from
+the single checkpoint saved by 02b_aae_encoder_training.ipynb.
 """
 import os
-import pickle
 import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
 
-# Project root (parent of Backend)
 _ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+_CHECKPOINT_PATH = os.path.join(_ROOT, "Model", "checkpoints", "aae_encoder.pt")
 _DATA_PATH = os.path.join(_ROOT, "data", "cleaned_songs_with_groups.csv")
-_ENCODER_PATH = os.path.join(_ROOT, "encoder.pkl")
 
-# 13 user-facing features (order must match CSV minus genre_group)
 FEATURE_NAMES = [
     "danceability", "energy", "key", "loudness", "mode", "speechiness",
     "acousticness", "instrumentalness", "liveness", "valence", "tempo",
@@ -26,12 +27,10 @@ NUMERICAL_FOR_SCALER = [
     "danceability", "energy", "loudness", "speechiness", "acousticness",
     "instrumentalness", "liveness", "valence", "tempo", "artist_pop", "track_pop",
 ]
-INPUT_DIM = 24
-LATENT_DIM = 12
 
 
 class Encoder(nn.Module):
-    """Encoder: input_dim -> 19 (ReLU) -> 15 (ReLU) -> z_mean (12), z_log_var (12)."""
+    """Encoder: input_dim -> 19 (ReLU) -> 15 (ReLU) -> z_mean, z_log_var."""
 
     def __init__(self, input_dim, latent_dim):
         super().__init__()
@@ -43,96 +42,62 @@ class Encoder(nn.Module):
     def forward(self, x):
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
-        z_mean = self.z_mean(x)
-        z_log_var = self.z_log_var(x)
-        return z_mean, z_log_var
+        return self.z_mean(x), self.z_log_var(x)
 
 
-# Lazy-loaded state
+# Lazy-loaded state — populated once by _load_checkpoint()
 _encoder = None
 _scaler = None
 _ohe = None
 _latent_space = None
+_genre_groups = None
 _songs_df = None
 
 
-def _get_data():
+def _load_checkpoint():
+    """Load encoder, preprocessing objects, and pre-computed latent space from the AAE checkpoint."""
+    global _encoder, _scaler, _ohe, _latent_space, _genre_groups
+
+    if _encoder is not None:
+        return
+
+    ckpt = torch.load(_CHECKPOINT_PATH, map_location="cpu", weights_only=False)
+
+    _encoder = Encoder(ckpt["input_dim"], ckpt["latent_dim"])
+    _encoder.load_state_dict(ckpt["encoder"])
+    _encoder.eval()
+
+    _scaler = ckpt["scaler"]
+    _ohe = ckpt["ohe"]
+    _latent_space = ckpt["latent_space"]
+    _genre_groups = ckpt["genre_groups"]
+
+
+def _get_songs_df():
+    """Load song metadata (for returning results). Cached after first call."""
     global _songs_df
     if _songs_df is None:
         _songs_df = pd.read_csv(_DATA_PATH)
     return _songs_df
 
 
-def _get_scaler_ohe():
-    global _scaler, _ohe
-    if _scaler is None:
-        df = _get_data()
-        X = df.drop(columns=["genre_group"], errors="ignore")
-        _scaler = StandardScaler()
-        _ohe = OneHotEncoder(sparse_output=False)
-        num = X[NUMERICAL_FOR_SCALER]
-        _scaler.fit(num)
-        _ohe.fit(X[["key"]].values)
-    return _scaler, _ohe
-
-
 def _preprocess_row(row_13: np.ndarray) -> np.ndarray:
-    """Turn 13-d user specs into 24-d encoder input (same pipeline as 02_encoder_training)."""
-    scaler, ohe = _get_scaler_ohe()
-    # row_13 order: danceability, energy, key, loudness, mode, speechiness, ...
+    """Turn 13-d user specs into 24-d encoder input using the training-time scaler/OHE."""
+    _load_checkpoint()
     row = row_13.reshape(1, -1)
     num = row[:, [FEATURE_NAMES.index(c) for c in NUMERICAL_FOR_SCALER]]
     key = row[:, FEATURE_NAMES.index("key")].reshape(-1, 1)
     mode = row[:, FEATURE_NAMES.index("mode")].reshape(-1, 1)
-    num_scaled = scaler.transform(num)
-    key_ohe = ohe.transform(key)
+    num_scaled = _scaler.transform(num)
+    key_ohe = _ohe.transform(key).toarray()
     cat = np.concatenate([key_ohe, mode], axis=1)
     return np.concatenate([num_scaled, cat], axis=1).astype(np.float32)
 
 
-def _preprocess_df(df: pd.DataFrame) -> np.ndarray:
-    """Preprocess full dataframe (13 feature cols) to 24-d."""
-    scaler, ohe = _get_scaler_ohe()
-    num = df[NUMERICAL_FOR_SCALER].values
-    key = df[["key"]].values
-    mode = df[["mode"]].values
-    num_scaled = scaler.transform(num)
-    key_ohe = ohe.transform(key)
-    cat = np.concatenate([key_ohe, mode], axis=1)
-    return np.concatenate([num_scaled, cat], axis=1).astype(np.float32)
-
-
-def _get_encoder():
-    global _encoder
-    if _encoder is None:
-        # Pickle was saved from a notebook (__main__.Encoder); make our class available
-        import __main__
-        __main__.Encoder = Encoder
-        with open(_ENCODER_PATH, "rb") as f:
-            _encoder = pickle.load(f)
-        _encoder.eval()
-    return _encoder
-
-
-def _get_latent_space():
-    global _latent_space, _songs_df
-    if _latent_space is None:
-        df = _get_data()
-        X = df.drop(columns=["genre_group"], errors="ignore")
-        X_24 = _preprocess_df(X)
-        enc = _get_encoder()
-        with torch.no_grad():
-            t = torch.from_numpy(X_24)
-            z_mean, _ = enc(t)
-            _latent_space = z_mean.numpy()
-        _songs_df = df
-    return _latent_space, _songs_df
-
-
-def user_specs_to_latent(specs: dict) -> np.ndarray:
+def user_specs_to_latent(specs) -> np.ndarray:
     """
     Map user playlist specs (13 values) to a 12-d latent point.
-    specs: dict with keys in FEATURE_NAMES (or list/array of 13 values in that order).
+    specs: dict with keys in FEATURE_NAMES, or list/array of 13 values in that order.
     """
     if isinstance(specs, dict):
         row = np.array([float(specs[k]) for k in FEATURE_NAMES], dtype=np.float32)
@@ -140,33 +105,29 @@ def user_specs_to_latent(specs: dict) -> np.ndarray:
         row = np.asarray(specs, dtype=np.float32).ravel()
     if row.size != 13:
         raise ValueError("Expected 13 features")
+
     x24 = _preprocess_row(row)
-    enc = _get_encoder()
+    _load_checkpoint()
     with torch.no_grad():
-        t = torch.from_numpy(x24)
-        z_mean, _ = enc(t)
+        z_mean, _ = _encoder(torch.from_numpy(x24))
         return z_mean.numpy().ravel()
 
 
 def build_playlist(user_preferences, k: int = 50, metric: str = "euclidean"):
     """
-    Build a playlist by creating a fake point in latent space from user specs
-    and returning the k nearest songs in that space.
+    Build a playlist: encode user preferences into the latent space,
+    find the k nearest songs, return their metadata.
 
-    user_preferences: dict with keys danceability, energy, key, loudness, mode,
-        speechiness, acousticness, instrumentalness, liveness, valence, tempo,
-        artist_pop, track_pop (or list/array of 13 values in that order).
-
-    Returns: list of dicts, each a song row (incl. genre_group) for the top k neighbors.
+    Returns: list of dicts (one per song, includes all CSV columns).
     """
+    _load_checkpoint()
     latent_user = user_specs_to_latent(user_preferences)
-    space, df = _get_latent_space()
+    df = _get_songs_df()
 
     if metric == "manhattan":
-        dists = np.sum(np.abs(space - latent_user), axis=1)
+        dists = np.sum(np.abs(_latent_space - latent_user), axis=1)
     else:
-        dists = np.sqrt(np.sum((space - latent_user) ** 2, axis=1))
+        dists = np.sqrt(np.sum((_latent_space - latent_user) ** 2, axis=1))
 
     idx = np.argsort(dists)[:k]
-    out = df.iloc[idx].to_dict(orient="records")
-    return out
+    return df.iloc[idx].to_dict(orient="records")
