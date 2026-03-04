@@ -4,6 +4,7 @@ This directory contains focused notebooks derived from `Lab2_multi_task_modal.ip
 
 1. **01_data_analysis.ipynb** – Loads the cleaned catalog, deduplicates tracks, and rolls raw genres into grouped categories with quick distribution plots.
 2. **02_encoder_training.ipynb** – Builds the VAE encoder/decoder pair, handles feature preprocessing, and trains/saves the latent representation.
+2b. **02b_aae_encoder_training.ipynb** – Adversarial Autoencoder (AAE) variant: replaces KL divergence with a discriminator that regularizes the latent space to match a standard normal prior.
 3. **03_encoder_inference.ipynb** – Explores the latent space, computes activity-specific centroids, and synthesizes user preference datasets.
 4. **04_multitask_training.ipynb** – Trains the general classifier, initializes personalized heads, and performs the multi-task optimization loops.
 5. **05_multitask_inference.ipynb** – Generates evaluation plots/metrics for each user head and runs the additional experiments/fine-tuning loops.
