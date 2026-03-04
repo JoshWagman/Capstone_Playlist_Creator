@@ -1,0 +1,51 @@
+id,artist,name,genre,tempo,mode,key,danceability,energy,loudness,speechiness,acousticness,instrumentalness,liveness,valence,track_popularity,artist_popularity
+4iV5W9uYEdYUVa79Axb7Rh,The Weeknd,Blinding Lights,Pop,171,1,6,0.514,0.73,-5.934,0.0598,0.0028,0.0897,0.334,0.723,92,98
+0VjIjW4GlUZAMYd2vXMi3b,Harry Styles,Watermelon Sugar,Pop,95,0,2,0.548,0.816,-4.209,0.0483,0.136,0.0143,0.094,0.557,84,90
+6UelLqGlWMcVH1E5c4H7lY,Dua Lipa,Levitating,Pop,103,0,9,0.702,0.825,-3.776,0.0807,0.0187,0.0,0.103,0.915,85,92
+2Fxmhks0bxGSBdJ92vM42m,Ed Sheeran,Shape of You,Pop,96,0,1,0.825,0.652,-3.183,0.0802,0.581,0.0,0.122,0.931,82,95
+3n3Ppam7vgaVa1iaRUIOKE,Post Malone,Rockstar,Hip-Hop,160,0,5,0.626,0.564,-6.136,0.119,0.0551,0.0,0.109,0.124,80,91
+0pqnGHJpmpxLKifKRmU6WP,Drake,God's Plan,Hip-Hop,77,1,1,0.754,0.449,-9.211,0.0863,0.0169,0.0,0.081,0.357,79,97
+7qiZfU4dY1lWllzX7mPBI3,Eminem,Lose Yourself,Hip-Hop,171,1,3,0.694,0.8,-5.808,0.305,0.0102,0.0,0.282,0.476,77,94
+5tz69p7tJuGPeMGwNTxYuV,Kendrick Lamar,HUMBLE.,Hip-Hop,150,0,0,0.904,0.621,-6.638,0.102,0.0009,0.0,0.1,0.421,83,92
+2CEgGE6aESpnmtfiZwYOCJ,Billie Eilish,bad guy,Pop,135,0,0,0.701,0.425,-13.47,0.372,0.0155,0.0,0.107,0.565,86,94
+0nbXyq5TXYPMBPBL1NPe3Q,Ariana Grande,7 rings,Pop,140,0,9,0.328,0.304,-12.47,0.367,0.394,0.0,0.116,0.215,81,93
+3ee8Jmje8o58CHK66QrVC2,Olivia Rodrigo,drivers license,Pop,72,1,4,0.339,0.427,-7.235,0.0291,0.742,0.0,0.088,0.132,87,91
+4Dvkj6JhhA12EX05fYtyVd,Bad Bunny,Dakiti,Electro,176,0,2,0.816,0.792,-4.112,0.0467,0.0673,0.0,0.084,0.765,88,95
+7KXjTSCq5nL1LoYtL7XAwS,AC/DC,Highway to Hell,Rock,116,1,4,0.559,0.917,-5.578,0.0558,0.0037,0.0,0.356,0.613,74,87
+5CQ30WqJwcep0pYcV4AMNc,Nirvana,Smells Like Teen Spirit,Rock,117,0,5,0.508,0.922,-5.399,0.0495,0.0009,0.0,0.694,0.722,72,89
+6b8Be6ljOzmkOmFslEb23P,Queen,Bohemian Rhapsody,Rock,71,1,4,0.399,0.403,-9.783,0.0293,0.197,0.0,0.155,0.283,76,92
+3JOVTQ5h8HyvI8IxnFqiIf,Guns N' Roses,Sweet Child O' Mine,Rock,123,1,8,0.403,0.8,-4.671,0.0436,0.0031,0.0,0.325,0.631,71,86
+6epn3r7S14KUqlReYr77hA,The Rolling Stones,Paint It Black,Rock,164,0,9,0.415,0.718,-7.456,0.0531,0.0103,0.0,0.115,0.453,68,85
+0DiWol3AO6WpXZgdkYTaFX,Daft Punk,Get Lucky,Electro,116,1,9,0.872,0.761,-7.405,0.0483,0.0002,0.0,0.099,0.955,79,88
+7ouMYWpwJ422jRcDASZB7P,Calvin Harris,Summer,Electro,128,1,11,0.72,0.869,-4.218,0.0441,0.0014,0.0,0.093,0.74,76,86
+5ghIJDpPoe3CfHMGu71E6T,Avicii,Wake Me Up,Electro,124,1,0,0.712,0.688,-5.878,0.0351,0.0025,0.0,0.099,0.621,77,84
+2TI7qyDE0QfyOlnbtV5zBl,Martin Garrix,Animals,Electro,128,0,5,0.63,0.96,-4.882,0.0397,0.0005,0.751,0.152,0.374,72,80
+3qhlB30KknSejmIvZZLjOD,Miles Davis,So What,Jazz,136,0,2,0.461,0.335,-12.2,0.0517,0.0198,0.903,0.105,0.572,55,78
+1r9xUipOqoNwggBpENDsvJ,John Coltrane,A Love Supreme,Jazz,120,1,5,0.381,0.249,-14.5,0.0387,0.0812,0.875,0.093,0.189,50,75
+6y0igZArWVi6Iz0rj35c1Y,Norah Jones,Come Away with Me,Jazz,84,1,7,0.465,0.259,-13.3,0.0285,0.862,0.0,0.109,0.495,62,80
+5odlY52u43F5BjByhxg7wg,Frank Sinatra,Fly Me to the Moon,Jazz,143,1,0,0.619,0.415,-10.6,0.0508,0.599,0.0,0.148,0.871,64,82
+7lQ8MOhq6IN2w8EYcFNSUk,Arctic Monkeys,Do I Wanna Know?,Indie,85,0,1,0.63,0.665,-7.064,0.0316,0.004,0.0,0.138,0.2,74,84
+0gplL1WMoJ6iYaPgMCL0gX,Tame Impala,The Less I Know the Better,Indie,116,1,5,0.621,0.647,-7.2,0.0237,0.0046,0.0,0.12,0.643,73,82
+6K4t31amVTZDgR3sKmwUJJ,Radiohead,Creep,Indie,92,1,4,0.453,0.523,-10.0,0.0433,0.0017,0.0,0.175,0.196,70,86
+4cluDES4hQEUhmXj6TXkSo,Vampire Weekend,A-Punk,Indie,175,1,5,0.676,0.92,-4.527,0.0489,0.0268,0.0,0.244,0.893,65,75
+0ofHAoxe9vBkTCp2UQIavz,The Strokes,Last Nite,Indie,150,0,4,0.603,0.801,-6.12,0.0526,0.0064,0.0,0.196,0.677,67,78
+78QR3birnChiSYe5JPEK4w,Frank Ocean,Nights,R&B,105,0,1,0.549,0.502,-9.013,0.0443,0.0239,0.0,0.095,0.334,76,88
+6ICBdA8E2ZvJZJQDHSJCFd,SZA,Kill Bill,R&B,89,0,1,0.724,0.511,-10.62,0.0285,0.153,0.0,0.103,0.482,84,89
+6WrI0LAC5M1Rw2MnX2ZvEg,H.E.R.,Best Part,R&B,77,1,2,0.543,0.399,-11.56,0.0354,0.595,0.0,0.114,0.438,72,81
+7lm5Lx4PaLVqcNOGv8mtgA,Giveon,Heartbreak Anniversary,R&B,67,1,5,0.392,0.283,-11.27,0.0371,0.643,0.0,0.104,0.209,78,85
+0pqnGHJpmpxLKifKRmU6WP,"Tyler, the Creator",EARFQUAKE,R&B,91,1,2,0.56,0.535,-9.842,0.0523,0.183,0.0,0.109,0.389,77,86
+0e7ipj03S05BNilyu5bRzt,Morgan Wallen,Wasted on You,Country,116,1,4,0.448,0.466,-7.231,0.0265,0.155,0.0,0.097,0.24,79,88
+3USxtqRwSYz57Ia2iKHgNb,Luke Combs,Beer Never Broke My Heart,Country,138,1,2,0.596,0.787,-4.836,0.0427,0.308,0.0,0.088,0.764,74,83
+3d9DCcoWTnFS919RCuBpp9,Kacey Musgraves,Rainbow,Country,78,1,9,0.347,0.427,-10.82,0.0356,0.732,0.0,0.115,0.382,71,80
+7lQ8MOhq6IN2w8EYcFNSUk,Chris Stapleton,Tennessee Whiskey,Country,81,1,9,0.468,0.539,-8.212,0.0451,0.179,0.0,0.103,0.484,73,82
+5ghIJDpPoe3CfHMGu71E6T,Zac Brown Band,Chicken Fried,Country,105,1,0,0.521,0.633,-6.543,0.0371,0.432,0.0,0.122,0.699,67,76
+4cluDES4hQEUhmXj6TXkSo,Metallica,Enter Sandman,Metal,123,0,4,0.459,0.96,-4.412,0.0622,0.0003,0.0,0.217,0.247,73,89
+0ofHAoxe9vBkTCp2UQIavz,Slipknot,Wait and Bleed,Metal,130,0,9,0.392,0.97,-4.118,0.0741,0.0001,0.0,0.268,0.311,66,79
+6ICBdA8E2ZvJZJQDHSJCFd,System of a Down,Chop Suey!,Metal,170,0,1,0.263,0.954,-5.015,0.0837,0.0002,0.0,0.182,0.419,68,82
+78QR3birnChiSYe5JPEK4w,Pantera,Walk,Metal,111,0,4,0.338,0.978,-4.722,0.0556,0.0001,0.0,0.239,0.343,62,76
+6WrI0LAC5M1Rw2MnX2ZvEg,Iron Maiden,The Trooper,Metal,190,1,4,0.405,0.971,-4.089,0.0614,0.0002,0.0,0.383,0.573,64,80
+3ee8Jmje8o58CHK66QrVC2,Johann Sebastian Bach,Toccata and Fugue in D Minor,Classical,96,0,2,0.215,0.305,-18.5,0.0412,0.0032,0.987,0.098,0.108,40,72
+2TI7qyDE0QfyOlnbtV5zBl,Beethoven,Moonlight Sonata,Classical,54,1,1,0.194,0.093,-24.3,0.0385,0.991,0.994,0.11,0.052,42,74
+3qhlB30KknSejmIvZZLjOD,Mozart,Eine Kleine Nachtmusik,Classical,133,1,7,0.461,0.528,-14.2,0.0448,0.984,0.971,0.119,0.786,45,76
+1r9xUipOqoNwggBpENDsvJ,Chopin,Nocturne Op. 9 No. 2,Classical,58,1,4,0.218,0.114,-22.4,0.0422,0.995,0.988,0.105,0.261,38,70
+6y0igZArWVi6Iz0rj35c1Y,Vivaldi,The Four Seasons – Spring,Classical,165,1,4,0.331,0.441,-16.8,0.0503,0.992,0.975,0.142,0.632,44,73
