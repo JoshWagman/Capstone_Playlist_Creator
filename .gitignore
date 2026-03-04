@@ -9,6 +9,8 @@ spotify_million_playlist_dataset/
 
 # Python / virtual environment
 venv/
+__pycache__/
+*.pyc
 
 # Other files and folders
 .settings/
