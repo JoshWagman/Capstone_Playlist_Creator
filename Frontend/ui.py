@@ -2,8 +2,12 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import os
+import sys
 import requests
 from datetime import datetime, timezone
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'Model'))
+from feature_io import save_vector, load_vector_with_meta, VECTOR_PATH
 
 # -----------------------
 # CONFIG
@@ -202,25 +206,13 @@ def spotify_post(endpoint: str, payload: dict, context: str = "") -> dict | None
 
 # ============================================================
 # TRACK ID RESOLUTION
-# February 2026: GET /tracks?ids=... (batch) was REMOVED.
-# Must now validate individually via GET /tracks/{id},
-# or resolve by searching artist + title.
-# Search limit reduced from 50 to 10 per request.
 # ============================================================
 
 def search_track_id(artist: str, title: str) -> str | None:
-    """
-    Search Spotify for a track. February 2026: max limit is now 10.
-    Returns the first match's ID or None.
-    """
     r = requests.get(
         f"{SPOTIFY_API_BASE}/search",
         headers=_auth_headers(),
-        params={
-            "q":     f"track:{title} artist:{artist}",
-            "type":  "track",
-            "limit": 1,        # stay well within the new limit=10 max
-        },
+        params={"q": f"track:{title} artist:{artist}", "type": "track", "limit": 1},
     )
     if not r.ok:
         return None
@@ -230,11 +222,8 @@ def search_track_id(artist: str, title: str) -> str | None:
 
 def validate_or_resolve_ids(rows: list[dict]) -> tuple[list[str], list[dict]]:
     """
-    For each row:
-      1. Try GET /tracks/{id}  (individual — batch endpoint removed Feb 2026)
-      2. If that fails, fall back to search by artist + title.
-
-    Returns (resolved_ids, failed_rows).
+    Validates each stored ID via GET /tracks/{id}.
+    Falls back to search if the stored ID is invalid or missing.
     """
     resolved_ids = []
     failed_rows  = []
@@ -243,7 +232,6 @@ def validate_or_resolve_ids(rows: list[dict]) -> tuple[list[str], list[dict]]:
         stored_id = str(row.get("ID", "")).strip()
         found_id  = None
 
-        # Step 1 — validate stored ID individually
         if stored_id:
             r = requests.get(
                 f"{SPOTIFY_API_BASE}/tracks/{stored_id}",
@@ -252,7 +240,6 @@ def validate_or_resolve_ids(rows: list[dict]) -> tuple[list[str], list[dict]]:
             if r.ok:
                 found_id = stored_id
 
-        # Step 2 — search fallback if stored ID was invalid / missing
         if not found_id:
             found_id = search_track_id(
                 row.get("Artist", ""),
@@ -432,9 +419,6 @@ def get_filtered_tracks_local(
 
 # ============================================================
 # SPOTIFY PLAYLIST UPLOAD
-# February 2026 compliant:
-#   POST /playlists/{id}/tracks  →  POST /playlists/{id}/items
-#   GET  /tracks?ids=...         →  GET  /tracks/{id}  (one by one)
 # ============================================================
 
 def upload_playlist_to_spotify(
@@ -464,7 +448,7 @@ def upload_playlist_to_spotify(
         status.update(label="Track IDs resolved.", state="complete")
 
     if not resolved_ids:
-        st.error("No tracks could be resolved on Spotify. Check your CSV artist and song names.")
+        st.error("No tracks could be resolved. Check your CSV artist and song names.")
         return None, 0, len(rows)
 
     # Step 2 — Create playlist via POST /me/playlists
@@ -487,7 +471,7 @@ def upload_playlist_to_spotify(
         st.error("Spotify returned a playlist with no ID.")
         return None, 0, len(rows)
 
-    # Step 3 — Add tracks via POST /playlists/{id}/items  ← February 2026 renamed endpoint
+    # Step 3 — Add tracks via POST /playlists/{id}/items (Feb 2026 renamed endpoint)
     uris     = [f"spotify:track:{tid}" for tid in resolved_ids]
     n_added  = 0
     n_failed = len(failed_rows)
@@ -495,7 +479,7 @@ def upload_playlist_to_spotify(
     for i in range(0, len(uris), 100):
         batch  = uris[i : i + 100]
         result = spotify_post(
-            f"playlists/{playlist_id}/items",   # ← /tracks → /items (Feb 2026)
+            f"playlists/{playlist_id}/items",
             payload={"uris": batch},
             context=f"Add Items {i + 1}–{i + len(batch)}",
         )
@@ -531,7 +515,7 @@ def _render_debug_expander(rows: list[dict] | None = None) -> None:
             st.error(f"Missing: `{', '.join(missing)}`. Log out and back in.")
 
         if rows:
-            st.write("**Sample track IDs (first 5):**", [r.get("ID","") for r in rows[:5]])
+            st.write("**Sample track IDs (first 5):**", [r.get("ID", "") for r in rows[:5]])
 
             if st.button("🧪 Validate first ID individually", key="debug_validate"):
                 row   = rows[0]
@@ -547,31 +531,23 @@ def _render_debug_expander(rows: list[dict] | None = None) -> None:
                     st.write(f"✅ Found: **{d['name']}** — {d['artists'][0]['name']}")
                 else:
                     st.write("❌ Invalid — trying search fallback…")
-                    found = search_track_id(row.get("Artist",""), row.get("Song Title",""))
-                    if found:
-                        st.success(f"Search found: `{found}`")
-                    else:
-                        st.error("Not found via search either.")
+                    found = search_track_id(row.get("Artist", ""), row.get("Song Title", ""))
+                    st.success(f"Search found: `{found}`") if found else st.error("Not found.")
 
             if st.button("🧪 Full dry-run upload (1 track)", key="debug_dry_run"):
                 token = _get_access_token()
-
-                # Create test playlist
-                pl_r = requests.post(
+                pl_r  = requests.post(
                     f"{SPOTIFY_API_BASE}/me/playlists",
                     headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
                     json={"name": "Debug Test – delete me", "public": False, "description": ""},
                 )
                 st.write(f"**Create playlist:** `{pl_r.status_code}`")
-
                 if pl_r.ok:
                     pl_id = pl_r.json().get("id")
                     row   = rows[0]
-                    tid   = str(row.get("ID","")).strip() or search_track_id(
-                        row.get("Artist",""), row.get("Song Title","")
+                    tid   = str(row.get("ID", "")).strip() or search_track_id(
+                        row.get("Artist", ""), row.get("Song Title", "")
                     )
-
-                    # Add 1 track via the NEW /items endpoint
                     tr_r = requests.post(
                         f"{SPOTIFY_API_BASE}/playlists/{pl_id}/items",
                         headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
@@ -586,9 +562,9 @@ def _render_debug_expander(rows: list[dict] | None = None) -> None:
                     st.json(pl_r.json())
 
 
-# -----------------------
+# ============================================================
 # SIDEBAR
-# -----------------------
+# ============================================================
 st.sidebar.title("Navigation")
 
 if st.session_state.sp_display_name:
@@ -614,9 +590,11 @@ if page == "🎛️ Playlist Generator":
     with st.sidebar.expander("🎹 Musical Features", expanded=True):
         target_bpm          = st.slider("Tempo (BPM)", 50, 200, 120)
         target_key          = st.slider("Key (0=C … 11=B)", 0, 11, 0)
-        target_mode         = st.radio("Mode", [0, 1],
-                                       format_func=lambda x: "Minor" if x == 0 else "Major",
-                                       horizontal=True)
+        target_mode         = st.radio(
+            "Mode", [0, 1],
+            format_func=lambda x: "Minor" if x == 0 else "Major",
+            horizontal=True,
+        )
         target_danceability = st.slider("Danceability",   0.0, 1.0, 0.5)
         target_energy       = st.slider("Energy",         0.0, 1.0, 0.5)
         target_valence      = st.slider("Valence (Mood)", 0.0, 1.0, 0.5)
@@ -633,6 +611,38 @@ if page == "🎛️ Playlist Generator":
         min_artist_pop = st.slider("Min Artist Popularity", 0, 100, 50)
         min_track_pop  = st.slider("Min Track Popularity",  0, 100, 40)
 
+    # ── Feature Vector (assembled live from sidebar values) ───────────────────
+    current_vector = {
+        "genre":                 genre_group,
+        "tempo":                 target_bpm,
+        "key":                   target_key,
+        "mode":                  target_mode,
+        "danceability":          target_danceability,
+        "energy":                target_energy,
+        "valence":               target_valence,
+        "loudness":              target_loudness,
+        "acousticness":          target_acousticness,
+        "instrumentalness":      target_instrumentalness,
+        "liveness":              target_liveness,
+        "speechiness":           target_speechiness,
+        "min_track_popularity":  min_track_pop,
+        "min_artist_popularity": min_artist_pop,
+    }
+
+    # ── Show last saved vector metadata in sidebar ────────────────────────────
+    st.sidebar.divider()
+    st.sidebar.markdown("### 💾 Feature Vector")
+
+    meta = load_vector_with_meta()
+    if meta:
+        st.sidebar.caption(f"Last saved: `{meta.get('saved_at', '—')}`")
+        with st.sidebar.expander("📄 View saved vector"):
+            for k, v in meta["vector"].items():
+                st.sidebar.write(f"**{k}**: `{v}`")
+    else:
+        st.sidebar.caption("No vector saved yet. Generate a playlist to save one.")
+
+    # ── Main page ─────────────────────────────────────────────────────────────
     st.title("🎵 AI Playlist Generator")
     st.markdown(
         f"Selecting **{genre_group}** tracks from your local database "
@@ -641,16 +651,29 @@ if page == "🎛️ Playlist Generator":
 
     if st.button("✨ Generate Playlist", type="primary"):
         with st.spinner("Scanning local database…"):
+
+            # Auto-save feature vector on every generation
+            try:
+                save_vector(current_vector)
+            except Exception as e:
+                st.warning(f"Could not save feature vector: {e}")
+
             data = get_filtered_tracks_local(
                 genre_group=genre_group,
-                target_danceability=target_danceability, target_energy=target_energy,
-                target_key=target_key, target_loudness=target_loudness,
-                target_mode=target_mode, target_speechiness=target_speechiness,
+                target_danceability=target_danceability,
+                target_energy=target_energy,
+                target_key=target_key,
+                target_loudness=target_loudness,
+                target_mode=target_mode,
+                target_speechiness=target_speechiness,
                 target_acousticness=target_acousticness,
                 target_instrumentalness=target_instrumentalness,
-                target_liveness=target_liveness, target_valence=target_valence,
-                target_tempo=target_bpm, min_artist_pop=min_artist_pop,
-                min_track_pop=min_track_pop, limit=15,
+                target_liveness=target_liveness,
+                target_valence=target_valence,
+                target_tempo=target_bpm,
+                min_artist_pop=min_artist_pop,
+                min_track_pop=min_track_pop,
+                limit=15,
             )
             st.session_state.playlist_data = pd.DataFrame(data)
             st.session_state.upload_url    = None
@@ -665,7 +688,8 @@ if page == "🎛️ Playlist Generator":
 
         st.dataframe(
             st.session_state.playlist_data.drop(columns=["Similarity"], errors="ignore"),
-            use_container_width=True, hide_index=True,
+            use_container_width=True,
+            hide_index=True,
             column_config={
                 "Cover":   st.column_config.ImageColumn("Art", width=50),
                 "Preview": st.column_config.LinkColumn("Preview"),
@@ -783,7 +807,8 @@ elif page == "🔥 Song Swiper":
             pd.DataFrame(st.session_state.liked_songs).drop(
                 columns=["Similarity"], errors="ignore"
             ),
-            use_container_width=True, hide_index=True,
+            use_container_width=True,
+            hide_index=True,
         )
 
         st.divider()
