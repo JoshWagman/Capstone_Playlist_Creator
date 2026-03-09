@@ -8,11 +8,14 @@ Everything (encoder weights, scaler, OHE, latent space) is loaded from
 the single checkpoint saved by 02b_aae_encoder_training.ipynb.
 """
 import os
+import logging
 import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
+log = logging.getLogger("music_matcher.backend")
 
 _ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 _CHECKPOINT_PATH = os.path.join(_ROOT, "Model", "checkpoints", "aae_encoder.pt")
@@ -61,6 +64,7 @@ def _load_checkpoint():
     if _encoder is not None:
         return
 
+    log.info("Loading checkpoint from %s …", _CHECKPOINT_PATH)
     ckpt = torch.load(_CHECKPOINT_PATH, map_location="cpu", weights_only=False)
 
     _encoder = Encoder(ckpt["input_dim"], ckpt["latent_dim"])
@@ -71,6 +75,7 @@ def _load_checkpoint():
     _ohe = ckpt["ohe"]
     _latent_space = ckpt["latent_space"]
     _genre_groups = ckpt["genre_groups"]
+    log.info("Checkpoint loaded — encoder ready, latent space shape: %s", _latent_space.shape)
 
 
 def _get_songs_df():
@@ -110,7 +115,9 @@ def user_specs_to_latent(specs) -> np.ndarray:
     _load_checkpoint()
     with torch.no_grad():
         z_mean, _ = _encoder(torch.from_numpy(x24))
-        return z_mean.numpy().ravel()
+        latent = z_mean.numpy().ravel()
+    log.info("User preferences encoded to latent vector: %s", np.round(latent, 4))
+    return latent
 
 
 def build_playlist(user_preferences, k: int = 50, metric: str = "euclidean"):
@@ -130,4 +137,8 @@ def build_playlist(user_preferences, k: int = 50, metric: str = "euclidean"):
         dists = np.sqrt(np.sum((_latent_space - latent_user) ** 2, axis=1))
 
     idx = np.argsort(dists)[:k]
+    log.info(
+        "KNN (%s, k=%d): nearest dist=%.4f, farthest dist=%.4f",
+        metric, k, dists[idx[0]], dists[idx[-1]],
+    )
     return df.iloc[idx].to_dict(orient="records")

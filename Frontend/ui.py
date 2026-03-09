@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -5,9 +7,20 @@ import os
 import sys
 import requests
 from datetime import datetime, timezone
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    datefmt="%H:%M:%S",
+)
+log = logging.getLogger("music_matcher")
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'Model'))
 from feature_io import save_vector, load_vector_with_meta, VECTOR_PATH
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'Backend'))
+from functions import build_playlist
 
 # -----------------------
 # CONFIG
@@ -311,6 +324,13 @@ run_login_gate()
 # LOCAL DATABASE
 # -----------------------
 @st.cache_data
+def _load_song_catalog() -> pd.DataFrame:
+    """Load cleaned_songs.csv (has artist names, track names, IDs, and audio features)."""
+    path = os.path.join(os.path.dirname(__file__), '..', 'data', 'cleaned_songs.csv')
+    return pd.read_csv(path)
+
+
+@st.cache_data
 def load_local_database(path: str = LOCAL_DB_PATH) -> pd.DataFrame:
     if not os.path.exists(path):
         st.error(f"Database file **'{path}'** not found.")
@@ -583,56 +603,25 @@ page = st.sidebar.radio("Go to", ["🎛️ Playlist Generator", "🔥 Song Swipe
 # PAGE 1: PLAYLIST GENERATOR
 # ==========================================
 if page == "🎛️ Playlist Generator":
-    st.sidebar.header("Settings")
+    catalog = _load_song_catalog()
+    log.info("Song catalog loaded: %d rows", len(catalog))
 
+    FEATURE_COLS = [
+        "danceability", "energy", "key", "loudness", "mode",
+        "speechiness", "acousticness", "instrumentalness",
+        "liveness", "valence", "tempo", "artist_pop", "track_pop",
+    ]
+
+    # -- Sidebar Controls --
+    st.sidebar.header("Settings")
     genre_group = st.sidebar.selectbox("Genre Group", list(GENRE_MAP.keys()))
 
-    with st.sidebar.expander("🎹 Musical Features", expanded=True):
-        target_bpm          = st.slider("Tempo (BPM)", 50, 200, 120)
-        target_key          = st.slider("Key (0=C … 11=B)", 0, 11, 0)
-        target_mode         = st.radio(
-            "Mode", [0, 1],
-            format_func=lambda x: "Minor" if x == 0 else "Major",
-            horizontal=True,
-        )
-        target_danceability = st.slider("Danceability",   0.0, 1.0, 0.5)
-        target_energy       = st.slider("Energy",         0.0, 1.0, 0.5)
-        target_valence      = st.slider("Valence (Mood)", 0.0, 1.0, 0.5)
-        target_loudness     = st.slider("Loudness (dB)", -60.0, 0.0, -10.0)
+    with st.sidebar.expander("🎹 Adjustments", expanded=True):
+        target_bpm = st.slider("Tempo (BPM)", 50, 200, 120)
+        playlist_size = st.slider("Playlist Size", 5, 50, 20)
 
-    with st.sidebar.expander("🎻 Technical Features", expanded=False):
-        target_acousticness     = st.slider("Acousticness",     0.0, 1.0, 0.10)
-        target_instrumentalness = st.slider("Instrumentalness", 0.0, 1.0, 0.00)
-        target_liveness         = st.slider("Liveness",         0.0, 1.0, 0.10)
-        target_speechiness      = st.slider("Speechiness",      0.0, 1.0, 0.05)
-
-    with st.sidebar.expander("⭐ Popularity Filters", expanded=True):
-        st.caption("Minimum popularity thresholds.")
-        min_artist_pop = st.slider("Min Artist Popularity", 0, 100, 50)
-        min_track_pop  = st.slider("Min Track Popularity",  0, 100, 40)
-
-    # ── Feature Vector (assembled live from sidebar values) ───────────────────
-    current_vector = {
-        "genre":                 genre_group,
-        "tempo":                 target_bpm,
-        "key":                   target_key,
-        "mode":                  target_mode,
-        "danceability":          target_danceability,
-        "energy":                target_energy,
-        "valence":               target_valence,
-        "loudness":              target_loudness,
-        "acousticness":          target_acousticness,
-        "instrumentalness":      target_instrumentalness,
-        "liveness":              target_liveness,
-        "speechiness":           target_speechiness,
-        "min_track_popularity":  min_track_pop,
-        "min_artist_popularity": min_artist_pop,
-    }
-
-    # ── Show last saved vector metadata in sidebar ────────────────────────────
     st.sidebar.divider()
     st.sidebar.markdown("### 💾 Feature Vector")
-
     meta = load_vector_with_meta()
     if meta:
         st.sidebar.caption(f"Last saved: `{meta.get('saved_at', '—')}`")
@@ -642,61 +631,120 @@ if page == "🎛️ Playlist Generator":
     else:
         st.sidebar.caption("No vector saved yet. Generate a playlist to save one.")
 
-    # ── Main page ─────────────────────────────────────────────────────────────
+    # -- Main Content --
     st.title("🎵 AI Playlist Generator")
     st.markdown(
-        f"Selecting **{genre_group}** tracks from your local database "
-        "ranked by **audio-feature similarity**."
+        "Pick **1–5 songs** you enjoy and we'll build a playlist that "
+        "matches your taste using our latent-space model."
     )
 
-    if st.button("✨ Generate Playlist", type="primary"):
-        with st.spinner("Scanning local database…"):
+    # Filter catalog by genre for the song picker
+    genre_key = GENRE_MAP.get(genre_group, "").lower()
+    if "genres" in catalog.columns:
+        mask = catalog["genres"].str.lower().str.contains(genre_key, na=False)
+        genre_catalog = catalog[mask].copy() if mask.any() else catalog.copy()
+    else:
+        genre_catalog = catalog.copy()
 
-            # Auto-save feature vector on every generation
-            try:
-                save_vector(current_vector)
-            except Exception as e:
-                st.warning(f"Could not save feature vector: {e}")
+    log.info("Genre filter '%s' -> %d songs in picker", genre_group, len(genre_catalog))
 
-            data = get_filtered_tracks_local(
-                genre_group=genre_group,
-                target_danceability=target_danceability,
-                target_energy=target_energy,
-                target_key=target_key,
-                target_loudness=target_loudness,
-                target_mode=target_mode,
-                target_speechiness=target_speechiness,
-                target_acousticness=target_acousticness,
-                target_instrumentalness=target_instrumentalness,
-                target_liveness=target_liveness,
-                target_valence=target_valence,
-                target_tempo=target_bpm,
-                min_artist_pop=min_artist_pop,
-                min_track_pop=min_track_pop,
-                limit=15,
+    genre_catalog["_label"] = (
+        genre_catalog["artist_name"].fillna("Unknown")
+        + " — "
+        + genre_catalog["track_name"].fillna("Unknown")
+    )
+    label_to_idx = dict(zip(genre_catalog["_label"], genre_catalog.index))
+
+    selected_labels = st.multiselect(
+        f"Search songs ({len(genre_catalog):,} {genre_group} tracks available)",
+        options=genre_catalog["_label"].tolist(),
+        max_selections=5,
+        placeholder="Type an artist or song name to search…",
+    )
+
+    if selected_labels:
+        seed_indices = [label_to_idx[l] for l in selected_labels if l in label_to_idx]
+        seed_df = catalog.loc[seed_indices]
+        with st.expander(f"Selected {len(seed_df)} seed song(s)", expanded=False):
+            st.dataframe(
+                seed_df[["artist_name", "track_name"]].rename(
+                    columns={"artist_name": "Artist", "track_name": "Song"}
+                ),
+                use_container_width=True,
+                hide_index=True,
             )
-            st.session_state.playlist_data = pd.DataFrame(data)
-            st.session_state.upload_url    = None
-            if not data:
-                st.error("No songs found. Try lowering the popularity thresholds.")
-            else:
-                st.success(f"Found **{len(data)}** tracks matching your criteria!")
+
+    if st.button("✨ Generate Playlist", type="primary"):
+        if not selected_labels:
+            st.error("Please select at least 1 seed song.")
+        else:
+            with st.spinner("Mapping preferences to latent space…"):
+                seed_indices = [label_to_idx[l] for l in selected_labels if l in label_to_idx]
+                seed_df = catalog.loc[seed_indices]
+                log.info("Seed songs selected: %s", selected_labels)
+
+                centroid = seed_df[FEATURE_COLS].mean()
+                centroid["tempo"] = float(target_bpm)
+                preferences = centroid.to_dict()
+                log.info("Centroid computed: %s", {k: round(v, 4) for k, v in preferences.items()})
+
+                try:
+                    save_vector(preferences)
+                    log.info("Feature vector saved to disk")
+                except Exception as e:
+                    log.warning("Could not save feature vector: %s", e)
+                    st.warning(f"Could not save feature vector: {e}")
+
+                log.info("Calling build_playlist(k=%d)…", playlist_size)
+                raw_results = build_playlist(preferences, k=playlist_size)
+                log.info("build_playlist returned %d raw results", len(raw_results))
+
+                # Merge with catalog to resolve song names and Spotify IDs
+                results_df = pd.DataFrame(raw_results)
+                lookup = (
+                    catalog[FEATURE_COLS + ["artist_name", "track_name", "id"]]
+                    .drop_duplicates(subset=FEATURE_COLS)
+                )
+                matched = results_df.merge(lookup, on=FEATURE_COLS, how="left")
+                n_unmatched = int(matched["track_name"].isna().sum())
+                if n_unmatched:
+                    log.warning("%d results could not be matched to song names", n_unmatched)
+                log.info("Merge complete: %d matched rows", len(matched) - n_unmatched)
+
+                display_data = []
+                for _, row in matched.iterrows():
+                    display_data.append({
+                        "ID": str(row.get("id", "")),
+                        "Artist": str(row.get("artist_name", "Unknown")),
+                        "Song Title": str(row.get("track_name", "Unknown")),
+                        "Genre": str(row.get("genre_group", "")),
+                        "BPM": int(round(float(row.get("tempo", 0)))),
+                    })
+
+                st.session_state.playlist_data = pd.DataFrame(display_data)
+                st.session_state.upload_url = None
+
+                if not display_data:
+                    log.error("No matching songs found")
+                    st.error("No matching songs found. Try different seed songs.")
+                else:
+                    log.info("Playlist built: %d tracks", len(display_data))
+                    for i, d in enumerate(display_data[:5], 1):
+                        log.info("  #%d  %s — %s", i, d["Artist"], d["Song Title"])
+                    if len(display_data) > 5:
+                        log.info("  … and %d more", len(display_data) - 5)
+                    st.success(f"Built a playlist with **{len(display_data)}** tracks!")
 
     if st.session_state.playlist_data is not None and not st.session_state.playlist_data.empty:
         st.divider()
         st.subheader("Your Curated Mix")
 
         st.dataframe(
-            st.session_state.playlist_data.drop(columns=["Similarity"], errors="ignore"),
+            st.session_state.playlist_data,
             use_container_width=True,
             hide_index=True,
             column_config={
-                "Cover":   st.column_config.ImageColumn("Art", width=50),
-                "Preview": st.column_config.LinkColumn("Preview"),
-                "Link":    st.column_config.LinkColumn("Link"),
-                "BPM":     st.column_config.NumberColumn("BPM", format="%d"),
-                "Pop (T)": st.column_config.ProgressColumn("Track Pop",  min_value=0, max_value=100),
-                "Pop (A)": st.column_config.ProgressColumn("Artist Pop", min_value=0, max_value=100),
+                "BPM": st.column_config.NumberColumn("BPM", format="%d"),
             },
         )
 
