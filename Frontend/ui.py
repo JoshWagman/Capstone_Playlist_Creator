@@ -20,7 +20,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'Model'))
 from feature_io import save_vector, load_vector_with_meta, VECTOR_PATH
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'Backend'))
-from functions import build_playlist
+from functions import build_playlist, build_playlist_from_seeds
 
 # -----------------------
 # CONFIG
@@ -42,9 +42,10 @@ LOCAL_DB_PATH = "songs_database.csv"
 
 GENRE_MAP = {
     "Pop": "pop", "Hip-Hop": "hip-hop", "Rock": "rock",
-    "Electro": "electronic", "Jazz": "jazz", "Indie": "indie",
-    "R&B": "r-n-b", "Rap": "hip-hop", "Classical": "classical",
-    "Country": "country", "Metal": "metal",
+    "Electro": "electro", "Jazz": "jazz", "Indie": "indie",
+    "R&B": "r&b", "Rap": "rap", "Classical": "classical",
+    "Country": "country", "Metal": "metal", "K-Pop": "k-pop",
+    "Folk": "folk", "Soul / Funk": "soul", "Dance": "dance",
 }
 
 KEY_MAP = {
@@ -325,9 +326,59 @@ run_login_gate()
 # -----------------------
 @st.cache_data
 def _load_song_catalog() -> pd.DataFrame:
-    """Load cleaned_songs.csv (has artist names, track names, IDs, and audio features)."""
-    path = os.path.join(os.path.dirname(__file__), '..', 'data', 'cleaned_songs.csv')
-    return pd.read_csv(path)
+    """Load top500k_catalog.csv and normalise genre / key / mode for the picker."""
+    import ast as _ast
+
+    path = os.path.join(os.path.dirname(__file__), '..', 'data', 'processed', 'top500k_catalog.csv')
+    df = pd.read_csv(path)
+
+    _NOTE_TO_INT = {
+        'C': 0, 'C#': 1, 'D': 2, 'D#': 3, 'E': 4, 'F': 5,
+        'F#': 6, 'G': 7, 'G#': 8, 'A': 9, 'A#': 10, 'B': 11,
+    }
+    _MODE_MAP = {'Major': 1, 'Minor': 0}
+
+    def _parse_key(v):
+        if pd.isna(v):
+            return np.nan
+        s = str(v).strip()
+        if s in _NOTE_TO_INT:
+            return _NOTE_TO_INT[s]
+        try:
+            return int(float(s))
+        except (ValueError, TypeError):
+            return np.nan
+
+    def _parse_mode(v):
+        if pd.isna(v):
+            return np.nan
+        s = str(v).strip()
+        if s in _MODE_MAP:
+            return _MODE_MAP[s]
+        try:
+            return int(float(s))
+        except (ValueError, TypeError):
+            return np.nan
+
+    def _parse_genre(v):
+        if pd.isna(v):
+            return np.nan
+        s = str(v).strip()
+        if s.startswith('['):
+            try:
+                lst = _ast.literal_eval(s)
+                return str(lst[0]) if lst else np.nan
+            except Exception:
+                return np.nan
+        return s
+
+    df['key'] = df['key'].apply(_parse_key)
+    df['mode'] = df['mode'].apply(_parse_mode)
+    df['genre'] = df['genre'].apply(_parse_genre)
+    df = df.dropna(subset=['genre', 'key', 'mode'])
+    df['key'] = df['key'].astype(int)
+    df['mode'] = df['mode'].astype(int)
+    return df
 
 
 @st.cache_data
@@ -609,7 +660,7 @@ if page == "🎛️ Playlist Generator":
     FEATURE_COLS = [
         "danceability", "energy", "key", "loudness", "mode",
         "speechiness", "acousticness", "instrumentalness",
-        "liveness", "valence", "tempo", "artist_pop", "track_pop",
+        "liveness", "valence", "tempo", "popularity",
     ]
 
     # -- Sidebar Controls --
@@ -640,13 +691,15 @@ if page == "🎛️ Playlist Generator":
 
     # Filter catalog by genre for the song picker
     genre_key = GENRE_MAP.get(genre_group, "").lower()
-    if "genres" in catalog.columns:
-        mask = catalog["genres"].str.lower().str.contains(genre_key, na=False)
+    if "genre" in catalog.columns:
+        mask = catalog["genre"].str.lower().str.contains(genre_key, na=False)
         genre_catalog = catalog[mask].copy() if mask.any() else catalog.copy()
     else:
         genre_catalog = catalog.copy()
 
     log.info("Genre filter '%s' -> %d songs in picker", genre_group, len(genre_catalog))
+
+    genre_catalog = genre_catalog.sort_values("popularity", ascending=False, na_position="last")
 
     genre_catalog["_label"] = (
         genre_catalog["artist_name"].fillna("Unknown")
@@ -683,42 +736,33 @@ if page == "🎛️ Playlist Generator":
                 seed_df = catalog.loc[seed_indices]
                 log.info("Seed songs selected: %s", selected_labels)
 
-                centroid = seed_df[FEATURE_COLS].mean()
-                centroid["tempo"] = float(target_bpm)
-                preferences = centroid.to_dict()
-                log.info("Centroid computed: %s", {k: round(v, 4) for k, v in preferences.items()})
+                seed_specs_list = []
+                for _, row in seed_df.iterrows():
+                    specs = row[FEATURE_COLS].to_dict()
+                    specs["tempo"] = float(target_bpm)
+                    seed_specs_list.append(specs)
 
                 try:
-                    save_vector(preferences)
-                    log.info("Feature vector saved to disk")
+                    centroid = seed_df[FEATURE_COLS].mean().to_dict()
+                    centroid["tempo"] = float(target_bpm)
+                    save_vector(centroid)
+                    log.info("Feature vector (centroid) saved to disk")
                 except Exception as e:
                     log.warning("Could not save feature vector: %s", e)
                     st.warning(f"Could not save feature vector: {e}")
 
-                log.info("Calling build_playlist(k=%d)…", playlist_size)
-                raw_results = build_playlist(preferences, k=playlist_size)
-                log.info("build_playlist returned %d raw results", len(raw_results))
-
-                # Merge with catalog to resolve song names and Spotify IDs
-                results_df = pd.DataFrame(raw_results)
-                lookup = (
-                    catalog[FEATURE_COLS + ["artist_name", "track_name", "id"]]
-                    .drop_duplicates(subset=FEATURE_COLS)
-                )
-                matched = results_df.merge(lookup, on=FEATURE_COLS, how="left")
-                n_unmatched = int(matched["track_name"].isna().sum())
-                if n_unmatched:
-                    log.warning("%d results could not be matched to song names", n_unmatched)
-                log.info("Merge complete: %d matched rows", len(matched) - n_unmatched)
+                log.info("Calling build_playlist_from_seeds(%d seeds, k=%d)…", len(seed_specs_list), playlist_size)
+                raw_results = build_playlist_from_seeds(seed_specs_list, k=playlist_size)
+                log.info("build_playlist_from_seeds returned %d raw results", len(raw_results))
 
                 display_data = []
-                for _, row in matched.iterrows():
+                for rec in raw_results:
                     display_data.append({
-                        "ID": str(row.get("id", "")),
-                        "Artist": str(row.get("artist_name", "Unknown")),
-                        "Song Title": str(row.get("track_name", "Unknown")),
-                        "Genre": str(row.get("genre_group", "")),
-                        "BPM": int(round(float(row.get("tempo", 0)))),
+                        "ID": str(rec.get("track_id", "")),
+                        "Artist": str(rec.get("artist_name", "Unknown")),
+                        "Song Title": str(rec.get("track_name", "Unknown")),
+                        "Genre": str(rec.get("genre", "")),
+                        "BPM": int(round(float(rec.get("tempo", 0)))),
                     })
 
                 st.session_state.playlist_data = pd.DataFrame(display_data)

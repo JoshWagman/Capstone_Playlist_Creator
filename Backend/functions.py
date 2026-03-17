@@ -1,7 +1,7 @@
 """
 Playlist building via latent-space proximity.
 
-User supplies 13 audio/popularity specs -> encode to 12-d latent point
+User supplies 12 audio/popularity specs -> encode to 12-d latent point
 -> find nearest neighbors in pre-computed latent space -> return songs.
 
 Everything (encoder weights, scaler, OHE, latent space) is loaded from
@@ -18,17 +18,17 @@ import torch.nn.functional as F
 log = logging.getLogger("music_matcher.backend")
 
 _ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-_CHECKPOINT_PATH = os.path.join(_ROOT, "Model", "checkpoints", "aae_encoder.pt")
-_DATA_PATH = os.path.join(_ROOT, "data", "cleaned_songs_with_groups.csv")
+_CHECKPOINT_PATH = os.path.join(_ROOT, "Model", "checkpoints", "aae_encoder_500k.pt")
+_DATA_PATH = os.path.join(_ROOT, "data", "processed", "top500k_catalog.csv")
 
 FEATURE_NAMES = [
     "danceability", "energy", "key", "loudness", "mode", "speechiness",
     "acousticness", "instrumentalness", "liveness", "valence", "tempo",
-    "artist_pop", "track_pop",
+    "popularity",
 ]
 NUMERICAL_FOR_SCALER = [
     "danceability", "energy", "loudness", "speechiness", "acousticness",
-    "instrumentalness", "liveness", "valence", "tempo", "artist_pop", "track_pop",
+    "instrumentalness", "liveness", "valence", "tempo", "popularity",
 ]
 
 
@@ -79,17 +79,87 @@ def _load_checkpoint():
 
 
 def _get_songs_df():
-    """Load song metadata (for returning results). Cached after first call."""
+    """Load and clean song metadata so row indices match the latent space.
+
+    Applies the same parsing/filtering pipeline used during training
+    (parse key/mode/genre, drop NaN, drop rare genres, select features, dropna, reset index).
+    """
     global _songs_df
-    if _songs_df is None:
-        _songs_df = pd.read_csv(_DATA_PATH)
+    if _songs_df is not None:
+        return _songs_df
+
+    import ast as _ast
+
+    raw = pd.read_csv(_DATA_PATH)
+
+    _NOTE_TO_INT = {
+        'C': 0, 'C#': 1, 'D': 2, 'D#': 3, 'E': 4, 'F': 5,
+        'F#': 6, 'G': 7, 'G#': 8, 'A': 9, 'A#': 10, 'B': 11,
+    }
+    _MODE_MAP = {'Major': 1, 'Minor': 0}
+
+    def _pk(v):
+        if pd.isna(v):
+            return np.nan
+        s = str(v).strip()
+        if s in _NOTE_TO_INT:
+            return _NOTE_TO_INT[s]
+        try:
+            return int(float(s))
+        except (ValueError, TypeError):
+            return np.nan
+
+    def _pm(v):
+        if pd.isna(v):
+            return np.nan
+        s = str(v).strip()
+        if s in _MODE_MAP:
+            return _MODE_MAP[s]
+        try:
+            return int(float(s))
+        except (ValueError, TypeError):
+            return np.nan
+
+    def _pg(v):
+        if pd.isna(v):
+            return np.nan
+        s = str(v).strip()
+        if s.startswith('['):
+            try:
+                lst = _ast.literal_eval(s)
+                return str(lst[0]) if lst else np.nan
+            except Exception:
+                return np.nan
+        return s
+
+    raw['key'] = raw['key'].apply(_pk)
+    raw['mode'] = raw['mode'].apply(_pm)
+    raw['genre'] = raw['genre'].apply(_pg)
+    raw = raw.dropna(subset=['genre', 'key', 'mode'])
+    raw['key'] = raw['key'].astype(int)
+    raw['mode'] = raw['mode'].astype(int)
+
+    genre_counts = raw['genre'].value_counts()
+    valid_genres = genre_counts[genre_counts >= 50].index
+    raw = raw[raw['genre'].isin(valid_genres)].reset_index(drop=True)
+
+    AUDIO_FEATURES = [
+        'danceability', 'energy', 'loudness', 'speechiness', 'acousticness',
+        'instrumentalness', 'liveness', 'valence', 'tempo', 'popularity',
+    ]
+    keep_cols = AUDIO_FEATURES + ['key', 'mode', 'genre']
+    songs = raw[keep_cols].copy()
+    valid_mask = songs.dropna().index
+    _songs_df = raw.loc[valid_mask].reset_index(drop=True)
+
+    log.info("Songs DF loaded: %d rows (should match latent space dim-0)", len(_songs_df))
     return _songs_df
 
 
-def _preprocess_row(row_13: np.ndarray) -> np.ndarray:
-    """Turn 13-d user specs into 24-d encoder input using the training-time scaler/OHE."""
+def _preprocess_row(row_12: np.ndarray) -> np.ndarray:
+    """Turn 12-d user specs into encoder input using the training-time scaler/OHE."""
     _load_checkpoint()
-    row = row_13.reshape(1, -1)
+    row = row_12.reshape(1, -1)
     num = row[:, [FEATURE_NAMES.index(c) for c in NUMERICAL_FOR_SCALER]]
     key = row[:, FEATURE_NAMES.index("key")].reshape(-1, 1)
     mode = row[:, FEATURE_NAMES.index("mode")].reshape(-1, 1)
@@ -101,20 +171,20 @@ def _preprocess_row(row_13: np.ndarray) -> np.ndarray:
 
 def user_specs_to_latent(specs) -> np.ndarray:
     """
-    Map user playlist specs (13 values) to a 12-d latent point.
-    specs: dict with keys in FEATURE_NAMES, or list/array of 13 values in that order.
+    Map user playlist specs (12 values) to a latent point.
+    specs: dict with keys in FEATURE_NAMES, or list/array of 12 values in that order.
     """
     if isinstance(specs, dict):
         row = np.array([float(specs[k]) for k in FEATURE_NAMES], dtype=np.float32)
     else:
         row = np.asarray(specs, dtype=np.float32).ravel()
-    if row.size != 13:
-        raise ValueError("Expected 13 features")
+    if row.size != len(FEATURE_NAMES):
+        raise ValueError(f"Expected {len(FEATURE_NAMES)} features, got {row.size}")
 
-    x24 = _preprocess_row(row)
+    x = _preprocess_row(row)
     _load_checkpoint()
     with torch.no_grad():
-        z_mean, _ = _encoder(torch.from_numpy(x24))
+        z_mean, _ = _encoder(torch.from_numpy(x))
         latent = z_mean.numpy().ravel()
     log.info("User preferences encoded to latent vector: %s", np.round(latent, 4))
     return latent
@@ -142,3 +212,60 @@ def build_playlist(user_preferences, k: int = 50, metric: str = "euclidean"):
         metric, k, dists[idx[0]], dists[idx[-1]],
     )
     return df.iloc[idx].to_dict(orient="records")
+
+
+def build_playlist_from_seeds(seed_specs_list, k: int = 50, metric: str = "euclidean"):
+    """
+    Build a playlist by sampling nearest neighbors around each seed song
+    individually, distributing k evenly across seeds.
+
+    Duplicates are skipped so the same song never appears twice.
+
+    seed_specs_list: list of dicts (one per seed), each with keys in FEATURE_NAMES.
+    k: total number of songs in the final playlist.
+
+    Returns: list of dicts (one per song, includes all CSV columns).
+    """
+    _load_checkpoint()
+    df = _get_songs_df()
+    n_seeds = len(seed_specs_list)
+
+    base = k // n_seeds
+    remainder = k % n_seeds
+    allocations = [base + (1 if i < remainder else 0) for i in range(n_seeds)]
+    log.info(
+        "Multi-seed playlist: %d seeds, allocations=%s (total=%d)",
+        n_seeds, allocations, sum(allocations),
+    )
+
+    latent_seeds = [user_specs_to_latent(specs) for specs in seed_specs_list]
+
+    used_indices = set()
+    all_results = []
+
+    for i, (latent_seed, alloc) in enumerate(zip(latent_seeds, allocations)):
+        if metric == "manhattan":
+            dists = np.sum(np.abs(_latent_space - latent_seed), axis=1)
+        else:
+            dists = np.sqrt(np.sum((_latent_space - latent_seed) ** 2, axis=1))
+
+        sorted_idx = np.argsort(dists)
+
+        count = 0
+        for idx in sorted_idx:
+            if count >= alloc:
+                break
+            if idx not in used_indices:
+                used_indices.add(idx)
+                all_results.append(df.iloc[idx].to_dict())
+                count += 1
+
+        nearest = dists[sorted_idx[0]]
+        farthest = dists[sorted_idx[min(count - 1, len(sorted_idx) - 1)]] if count else 0.0
+        log.info(
+            "  Seed %d/%d: wanted %d, added %d (nearest=%.4f, farthest=%.4f)",
+            i + 1, n_seeds, alloc, count, nearest, farthest,
+        )
+
+    log.info("Multi-seed playlist complete: %d total tracks", len(all_results))
+    return all_results
