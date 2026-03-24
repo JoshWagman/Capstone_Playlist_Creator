@@ -1,17 +1,17 @@
 {
-  "saved_at": "2026-03-11T15:52:24",
+  "saved_at": "2026-03-24T16:17:50",
   "vector": {
-    "danceability": 0.49033333333333334,
-    "energy": 0.711,
-    "key": 7.333333333333333,
-    "loudness": -9.825333333333333,
-    "mode": 0.6666666666666666,
-    "speechiness": 0.03613333333333333,
-    "acousticness": 0.14370333333333335,
-    "instrumentalness": 0.25190666666666667,
-    "liveness": 0.11173333333333331,
-    "valence": 0.6789999999999999,
+    "danceability": 0.601,
+    "energy": 0.48550000000000004,
+    "key": 4.0,
+    "loudness": -10.086,
+    "mode": 1.0,
+    "speechiness": 0.0958,
+    "acousticness": 0.897,
+    "instrumentalness": 0.0167218,
+    "liveness": 0.16899999999999998,
+    "valence": 0.5945,
     "tempo": 120.0,
-    "popularity": 54.333333333333336
+    "popularity": 62.0
   }
 }

@@ -20,7 +20,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'Model'))
 from feature_io import save_vector, load_vector_with_meta, VECTOR_PATH
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'Backend'))
-from functions import build_playlist, build_playlist_from_seeds
+from functions import build_playlist, build_playlist_from_seeds, _detect_lang
 
 # -----------------------
 # CONFIG
@@ -542,7 +542,6 @@ def upload_playlist_to_spotify(
         st.error("Spotify returned a playlist with no ID.")
         return None, 0, len(rows)
 
-    # Step 3 — Add tracks via POST /playlists/{id}/items (Feb 2026 renamed endpoint)
     uris     = [f"spotify:track:{tid}" for tid in resolved_ids]
     n_added  = 0
     n_failed = len(failed_rows)
@@ -550,7 +549,7 @@ def upload_playlist_to_spotify(
     for i in range(0, len(uris), 100):
         batch  = uris[i : i + 100]
         result = spotify_post(
-            f"playlists/{playlist_id}/items",
+            f"playlists/{playlist_id}/tracks",
             payload={"uris": batch},
             context=f"Add Items {i + 1}–{i + len(batch)}",
         )
@@ -620,7 +619,7 @@ def _render_debug_expander(rows: list[dict] | None = None) -> None:
                         row.get("Artist", ""), row.get("Song Title", "")
                     )
                     tr_r = requests.post(
-                        f"{SPOTIFY_API_BASE}/playlists/{pl_id}/items",
+                        f"{SPOTIFY_API_BASE}/playlists/{pl_id}/tracks",
                         headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
                         json={"uris": [f"spotify:track:{tid}"]},
                     )
@@ -665,7 +664,12 @@ if page == "🎛️ Playlist Generator":
 
     # -- Sidebar Controls --
     st.sidebar.header("Settings")
-    genre_group = st.sidebar.selectbox("Genre Group", list(GENRE_MAP.keys()))
+    genre_groups = st.sidebar.multiselect(
+        "Genre Groups",
+        options=list(GENRE_MAP.keys()),
+        default=["Pop"],
+        placeholder="Pick one or more genres…",
+    )
 
     with st.sidebar.expander("🎹 Adjustments", expanded=True):
         target_bpm = st.slider("Tempo (BPM)", 50, 200, 120)
@@ -689,15 +693,18 @@ if page == "🎛️ Playlist Generator":
         "matches your taste using our latent-space model."
     )
 
-    # Filter catalog by genre for the song picker
-    genre_key = GENRE_MAP.get(genre_group, "").lower()
-    if "genre" in catalog.columns:
-        mask = catalog["genre"].str.lower().str.contains(genre_key, na=False)
+    # Filter catalog by selected genres for the song picker
+    if genre_groups and "genre" in catalog.columns:
+        genre_keys = [GENRE_MAP.get(g, "").lower() for g in genre_groups]
+        mask = catalog["genre"].str.lower().apply(
+            lambda v: any(k in v for k in genre_keys) if pd.notna(v) else False
+        )
         genre_catalog = catalog[mask].copy() if mask.any() else catalog.copy()
     else:
         genre_catalog = catalog.copy()
 
-    log.info("Genre filter '%s' -> %d songs in picker", genre_group, len(genre_catalog))
+    genre_label = ", ".join(genre_groups) if genre_groups else "All"
+    log.info("Genre filter %s -> %d songs in picker", genre_label, len(genre_catalog))
 
     genre_catalog = genre_catalog.sort_values("popularity", ascending=False, na_position="last")
 
@@ -709,7 +716,7 @@ if page == "🎛️ Playlist Generator":
     label_to_idx = dict(zip(genre_catalog["_label"], genre_catalog.index))
 
     selected_labels = st.multiselect(
-        f"Search songs ({len(genre_catalog):,} {genre_group} tracks available)",
+        f"Search songs ({len(genre_catalog):,} {genre_label} tracks available)",
         options=genre_catalog["_label"].tolist(),
         max_selections=5,
         placeholder="Type an artist or song name to search…",
@@ -751,8 +758,19 @@ if page == "🎛️ Playlist Generator":
                     log.warning("Could not save feature vector: %s", e)
                     st.warning(f"Could not save feature vector: {e}")
 
-                log.info("Calling build_playlist_from_seeds(%d seeds, k=%d)…", len(seed_specs_list), playlist_size)
-                raw_results = build_playlist_from_seeds(seed_specs_list, k=playlist_size)
+                seed_genres = seed_df["genre"].dropna().unique().tolist() if "genre" in seed_df.columns else None
+
+                from collections import Counter
+                _lang_votes = [
+                    _detect_lang(str(name))
+                    for name in seed_df["track_name"].dropna()
+                    if _detect_lang(str(name)) is not None
+                ]
+                seed_language = Counter(_lang_votes).most_common(1)[0][0] if _lang_votes else None
+                log.info("Detected seed language: %s (votes=%s)", seed_language, _lang_votes)
+
+                log.info("Calling build_playlist_from_seeds(%d seeds, k=%d, seed_genres=%s, lang=%s)…", len(seed_specs_list), playlist_size, seed_genres, seed_language)
+                raw_results = build_playlist_from_seeds(seed_specs_list, k=playlist_size, seed_genres=seed_genres, seed_language=seed_language)
                 log.info("build_playlist_from_seeds returned %d raw results", len(raw_results))
 
                 display_data = []
@@ -806,7 +824,7 @@ if page == "🎛️ Playlist Generator":
 
         pl_desc = st.text_input(
             "Description (optional)",
-            value=f"Generated by Music Matcher | Genre: {genre_group}",
+            value=f"Generated by Music Matcher | Genre: {genre_label}",
         )
 
         rows = st.session_state.playlist_data.to_dict("records")
