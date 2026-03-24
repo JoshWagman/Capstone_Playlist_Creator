@@ -38,7 +38,7 @@ SPOTIFY_AUTH_URL  = "https://accounts.spotify.com/authorize"
 SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token"
 SPOTIFY_API_BASE  = "https://api.spotify.com/v1"
 
-LOCAL_DB_PATH = "songs_database.csv"
+LOCAL_DB_PATH = "top100k_catalog.csv"
 
 GENRE_MAP = {
     "Pop": "pop", "Hip-Hop": "hip-hop", "Rock": "rock",
@@ -549,7 +549,7 @@ def upload_playlist_to_spotify(
     for i in range(0, len(uris), 100):
         batch  = uris[i : i + 100]
         result = spotify_post(
-            f"playlists/{playlist_id}/tracks",
+            f"playlists/{playlist_id}/items",  # ← /tracks → /items
             payload={"uris": batch},
             context=f"Add Items {i + 1}–{i + len(batch)}",
         )
@@ -619,7 +619,7 @@ def _render_debug_expander(rows: list[dict] | None = None) -> None:
                         row.get("Artist", ""), row.get("Song Title", "")
                     )
                     tr_r = requests.post(
-                        f"{SPOTIFY_API_BASE}/playlists/{pl_id}/tracks",
+                        f"{SPOTIFY_API_BASE}/playlists/{pl_id}/items",  # ← /tracks → /items
                         headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
                         json={"uris": [f"spotify:track:{tid}"]},
                     )
