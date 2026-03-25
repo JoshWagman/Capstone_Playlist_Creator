@@ -429,7 +429,7 @@ def main():
     combined = combined.sort_values("popularity", ascending=False)
     combined = combined.drop_duplicates(subset="track_id", keep="first")
 
-    print(f"Unique tracks after dedup: {len(combined):,}")
+    print(f"Unique tracks after track ID dedup: {len(combined):,}")
 
     # ---------------------------------------------------------------------------
     # Drop rows with no artist name — can't group without one
@@ -438,6 +438,50 @@ def main():
     combined = combined.dropna(subset=["artist_name"])
     combined = combined[combined["artist_name"].str.strip() != ""]
     print(f"Tracks with a valid artist name: {len(combined):,}")
+
+    # ---------------------------------------------------------------------------
+    # Normalise artist_name: some datasets store multiple artists as a
+    # stringified Python list e.g. "['Drake', 'Future']".  Extract just the
+    # first listed artist so every row uses a plain string, then strip quotes
+    # and whitespace.  This must happen before any dedup so that
+    # "['Drake']" and "Drake" are treated as the same artist.
+    # ---------------------------------------------------------------------------
+
+    def extract_primary_artist(val: str) -> str:
+        val = str(val).strip()
+        if val.startswith("["):
+            # Parse the list-like string and take the first element
+            import ast
+            try:
+                parsed = ast.literal_eval(val)
+                if isinstance(parsed, list) and parsed:
+                    return str(parsed[0]).strip()
+            except (ValueError, SyntaxError):
+                # Fall back to a simple regex strip if ast fails
+                val = val.strip("[]").split(",")[0]
+        # Remove any surrounding quotes left over
+        return val.strip("'" '"')
+
+    combined["artist_name"] = combined["artist_name"].apply(extract_primary_artist)
+    # Drop any rows that became empty after normalisation
+    combined = combined[combined["artist_name"] != ""]
+    print(f"Tracks after artist name normalisation: {len(combined):,}")
+
+    # ---------------------------------------------------------------------------
+    # Second dedup pass: same song title + artist, different track IDs
+    # (e.g. single vs album vs region variant).  Normalise both fields to
+    # lowercase + stripped whitespace so casing differences don't create false
+    # duplicates.  The sort above already put the highest-popularity row first,
+    # so keep="first" retains the most popular version.
+    # ---------------------------------------------------------------------------
+
+    before = len(combined)
+    combined["_artist_norm"] = combined["artist_name"].str.lower().str.strip()
+    combined["_title_norm"]  = combined["track_name"].str.lower().str.strip() if "track_name" in combined.columns else ""
+    combined = combined.drop_duplicates(subset=["_artist_norm", "_title_norm"], keep="first")
+    combined = combined.drop(columns=["_artist_norm", "_title_norm"])
+    print(f"Unique tracks after title+artist dedup: {len(combined):,}  "
+          f"(removed {before - len(combined):,} same-song duplicates)")
 
     # ---------------------------------------------------------------------------
     # STEP 3: Remove remastered / live / variant versions
