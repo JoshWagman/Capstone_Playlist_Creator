@@ -747,13 +747,6 @@ with st.sidebar:
         )
 
     st.divider()
-    st.markdown(
-        "<p style='color:#9ba8bb;font-size:0.72rem;font-weight:600;"
-        "letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px;'>"
-        "🎛️ Playlist Generator</p>",
-        unsafe_allow_html=True,
-    )
-    st.divider()
 
     meta = load_vector_with_meta()
     if meta:
