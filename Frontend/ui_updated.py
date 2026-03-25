@@ -804,7 +804,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ── Controls row ──
-col_genre, col_bpm, col_size = st.columns([3, 1.5, 1.5])
+col_genre, col_size = st.columns([4, 1.5])
 with col_genre:
     genre_groups = st.multiselect(
         "Genre",
@@ -812,8 +812,6 @@ with col_genre:
         default=["Pop"],
         placeholder="Pick one or more genres…",
     )
-with col_bpm:
-    target_bpm = st.slider("Target BPM", 50, 200, 120)
 with col_size:
     playlist_size = st.slider("Playlist size", 5, 50, 20)
 
@@ -876,12 +874,10 @@ if st.button("✨ Generate Playlist", type="primary", use_container_width=False)
             seed_specs_list = []
             for _, row in seed_df.iterrows():
                 specs = row[FEATURE_COLS].to_dict()
-                specs["tempo"] = float(target_bpm)
                 seed_specs_list.append(specs)
 
             try:
                 centroid = seed_df[FEATURE_COLS].mean().to_dict()
-                centroid["tempo"] = float(target_bpm)
                 save_vector(centroid)
             except Exception as e:
                 log.warning("Could not save feature vector: %s", e)
