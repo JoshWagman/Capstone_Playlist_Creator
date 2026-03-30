@@ -713,13 +713,46 @@ if page == "🎛️ Playlist Generator":
         + " — "
         + genre_catalog["track_name"].fillna("Unknown")
     )
+    genre_catalog["_artist_lower"] = genre_catalog["artist_name"].fillna("").str.lower()
+    genre_catalog["_track_lower"] = genre_catalog["track_name"].fillna("").str.lower()
     label_to_idx = dict(zip(genre_catalog["_label"], genre_catalog.index))
 
-    selected_labels = st.multiselect(
+    search_query = st.text_input(
         f"Search songs ({len(genre_catalog):,} {genre_label} tracks available)",
-        options=genre_catalog["_label"].tolist(),
+        placeholder="Type an artist or song name…",
+    )
+
+    if search_query and len(search_query.strip()) >= 2:
+        q = search_query.strip().lower()
+        tokens = q.split()
+
+        exact_artist = genre_catalog["_artist_lower"].str.startswith(q)
+        exact_track = genre_catalog["_track_lower"].str.startswith(q)
+
+        all_tokens = pd.Series(True, index=genre_catalog.index)
+        for tok in tokens:
+            all_tokens &= (
+                genre_catalog["_artist_lower"].str.contains(tok, regex=False)
+                | genre_catalog["_track_lower"].str.contains(tok, regex=False)
+            )
+
+        genre_catalog["_rank"] = 0
+        genre_catalog.loc[all_tokens, "_rank"] = 1
+        genre_catalog.loc[exact_track, "_rank"] = 2
+        genre_catalog.loc[exact_artist, "_rank"] = 3
+
+        search_results = genre_catalog[genre_catalog["_rank"] > 0].sort_values(
+            ["_rank", "popularity"], ascending=[False, False]
+        ).head(50)
+        search_options = search_results["_label"].tolist()
+    else:
+        search_options = []
+
+    selected_labels = st.multiselect(
+        "Select up to 5 songs",
+        options=search_options,
         max_selections=5,
-        placeholder="Type an artist or song name to search…",
+        placeholder="Search above first…" if not search_options else f"{len(search_options)} matches — pick your seeds",
     )
 
     if selected_labels:
