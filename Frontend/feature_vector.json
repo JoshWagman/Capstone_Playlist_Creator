@@ -1,34 +1,17 @@
 {
-<<<<<<< HEAD
-  "saved_at": "2026-03-25T15:08:41",
+  "saved_at": "2026-04-06T22:06:11",
   "vector": {
-    "danceability": 0.722,
-    "energy": 0.78,
-    "key": 5.0,
-    "loudness": -8.623,
-    "mode": 0.0,
-    "speechiness": 0.0753,
-    "acousticness": 0.00659,
-    "instrumentalness": 0.047,
-    "liveness": 0.0545,
-    "valence": 0.2,
-    "tempo": 120.0,
-    "popularity": 60.0
-=======
-  "saved_at": "2026-03-25T15:59:01",
-  "vector": {
-    "danceability": 0.585,
-    "energy": 0.436,
-    "key": 10.0,
-    "loudness": -8.761000000000001,
+    "danceability": 0.6255000000000001,
+    "energy": 0.5895,
+    "key": 3.0,
+    "loudness": -6.662,
     "mode": 1.0,
-    "speechiness": 0.0601,
-    "acousticness": 0.721,
-    "instrumentalness": 1.31e-05,
-    "liveness": 0.105,
-    "valence": 0.132,
-    "tempo": 143.874,
-    "popularity": 99.0
->>>>>>> refs/remotes/origin/main
+    "speechiness": 0.03605,
+    "acousticness": 0.7195,
+    "instrumentalness": 1.03e-06,
+    "liveness": 0.10275000000000001,
+    "valence": 0.5800000000000001,
+    "tempo": 124.9,
+    "popularity": 75.5
   }
 }

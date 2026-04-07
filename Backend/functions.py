@@ -29,17 +29,28 @@ _REMASTER_RE = re.compile(
     r"bonus\s+track|"
     r"expanded(\s+edition)?|"
     r"special\s+edition|"
-    r"\d{4}\s+remaster(ed)?|"
-    r"\d{4}\s+mix"
+    r"\d{4}\s+(remaster(ed)?|mix|version)|"
+    r"single\s+(remix|mix|version|edit)|"
+    r"remix|"
+    r"live|"
+    r"club\s+mix|"
+    r"radio\s+edit"
     r").*$",
     re.IGNORECASE,
 )
+
+def _clean_artist(artist: str) -> str:
+    """Strip list brackets, quotes, and normalise artist for dedup keys."""
+    a = str(artist).strip()
+    a = re.sub(r"[\[\]\"']+", "", a)
+    a = a.split(",")[0].split(";")[0].split("&")[0].strip()
+    return a.lower()
 
 
 def _normalize_title(artist: str, title: str) -> str:
     """Return a lowercased, remaster-stripped key for duplicate detection."""
     t = _REMASTER_RE.sub("", str(title)).strip().rstrip(")")
-    return f"{str(artist).strip().lower()}|||{t.lower()}"
+    return f"{_clean_artist(artist)}|||{t.lower()}"
 
 
 def _detect_lang(text: str) -> str | None:

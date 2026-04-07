@@ -15,7 +15,10 @@ import json
 import os
 from datetime import datetime
 
-VECTOR_PATH = "feature_vector.json"
+VECTOR_PATH = os.path.join(
+    os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "Frontend")),
+    "feature_vector.json",
+)
 
 # Canonical ordered list of all feature keys — use this in other files
 FEATURE_KEYS = [

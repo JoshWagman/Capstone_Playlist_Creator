@@ -1,0 +1,11 @@
+listener_id,listener_name,num_songs,num_genres,top_genres,pct_loved,pct_tolerated,pct_despised,genre_consistency,feature_coherence,cohesion_score,seed_songs
+1,Jazz/Blues Purist,20,3,"jazz, indie_soul, modern_rock",95.0,0.0,0.0,9.5,8.6,9.0,Hati-Hati di Jalan | Monokrom | Just the Two of Us (feat. Bill Withers)
+2,Rock Veteran,20,5,"rock, alternative, canadian_pop",60.0,25.0,5.0,8.5,8.5,8.5,Sweater Weather | I Wanna Be Yours | Running Up That Hill (A Deal With God)
+3,Pop Mainstream,20,3,"pop, brooklyn_drill, toronto_rap",85.0,0.0,0.0,8.5,8.8,8.6,Unholy (feat. Kim Petras) | Flowers | drivers license
+4,Hip-Hop Head,20,5,"hip-hop, rap, melodic_rap",90.0,5.0,0.0,9.5,8.6,9.0,"Quevedo: Bzrp Music Sessions, Vol. 52 | Shakira: Bzrp Music Sessions, Vol. 53 | Heartless"
+5,EDM/Dance Fan,20,4,"reggaeton, edm, latino",40.0,0.0,0.0,4.0,8.7,6.4,ROXANNE | Circles | Ride It
+6,Indie Dreamer,20,4,"indie-pop, indie, contemporary_country",90.0,0.0,0.0,9.0,8.4,8.7,I Love You So | golden hour | Those Eyes
+7,Classical/Ambient,20,5,"alternative, piano, underground_hip_hop",20.0,0.0,0.0,2.0,8.6,5.3,I Ain't Worried | Hold Me Closer | I'm Still Standing
+8,Latin Lover,20,5,"latin, toronto_rap, reggaeton",75.0,0.0,0.0,7.5,8.6,8.0,Dance Monkey | The Box | Memories
+9,Country/Folk Fan,20,2,"folk, country",100.0,0.0,0.0,10.0,8.3,9.2,Atlantis | ceilings | Something in the Orange
+10,K-Pop/J-Pop Fan,20,3,"k-pop, latino, electro_house",70.0,70.0,0.0,10.0,8.6,10.0,OMG | Dynamite | Ditto

@@ -1,0 +1,201 @@
+listener_id,listener_name,song_idx,track_name,artist_name,genre,genre_score,feature_score,fit_score
+1,Jazz/Blues Purist,1,Hati-Hati di Jalan,Tulus,jazz,10.0,8.7,9.3
+1,Jazz/Blues Purist,2,1000 Tahun Lamanya,Tulus,jazz,10.0,8.4,9.2
+1,Jazz/Blues Purist,3,Jatuh Cinta,Tulus,jazz,10.0,8.6,9.3
+1,Jazz/Blues Purist,4,Bumerang,Tulus,jazz,10.0,8.9,9.4
+1,Jazz/Blues Purist,5,Jangan Cintai Aku Apa Adanya,Tulus,jazz,10.0,8.9,9.5
+1,Jazz/Blues Purist,6,Sesaat Kau Hadir,Utha Likumahuwa,jazz,10.0,8.5,9.3
+1,Jazz/Blues Purist,7,Senja Teduh Pelita,MALIQ & D'Essentials,jazz,10.0,8.0,9.0
+1,Jazz/Blues Purist,8,Tutur Batin,Yura Yunita,jazz,10.0,8.8,9.4
+1,Jazz/Blues Purist,9,Berawal Dari Tatap,Yura Yunita,jazz,10.0,8.7,9.3
+1,Jazz/Blues Purist,10,Dunia Tipu-Tipu,Yura Yunita,jazz,10.0,9.1,9.5
+1,Jazz/Blues Purist,11,Sahabat Jadi Cinta,Mike Mohede,jazz,10.0,8.7,9.4
+1,Jazz/Blues Purist,12,10%,"['KAYTRANADA', 'Kali Uchis']",indie_soul,10.0,7.5,8.7
+1,Jazz/Blues Purist,13,Sunny,Laura Fygi,jazz,10.0,8.8,9.4
+1,Jazz/Blues Purist,14,Sepatu,Tulus,jazz,10.0,8.9,9.4
+1,Jazz/Blues Purist,15,Sunday Vibe,The BREED,jazz,10.0,7.9,9.0
+1,Jazz/Blues Purist,16,Sunflakes,RLLBTS;Run Wallace;Golden Ticket Tapes,jazz,10.0,7.7,8.9
+1,Jazz/Blues Purist,17,Januari,Glenn Fredly,jazz,10.0,7.9,8.9
+1,Jazz/Blues Purist,18,1992,"['Rejjie Snow', 'Loyle Carner']",indie_soul,10.0,7.6,8.8
+1,Jazz/Blues Purist,19,Big Parade,['The Lumineers'],modern_rock,3.0,8.2,5.6
+1,Jazz/Blues Purist,20,Personal Jesus,Jazzystics,jazz,10.0,8.2,9.1
+2,Rock Veteran,1,Sweater Weather,The Neighbourhood,rock,10.0,9.2,9.6
+2,Rock Veteran,2,The Man Who Can't Be Moved,The Script,rock,10.0,8.6,9.3
+2,Rock Veteran,3,Brother,Kodaline,rock,10.0,8.9,9.4
+2,Rock Veteran,4,My Type,['Saint Motel'],rock,10.0,9.2,9.6
+2,Rock Veteran,5,Daddy Issues (Remix) feat. Syd,The Neighbourhood;Syd,alternative,5.0,8.5,6.7
+2,Rock Veteran,6,Otherside,Red Hot Chili Peppers,alternative,5.0,9.4,7.2
+2,Rock Veteran,7,Scar Tissue,Red Hot Chili Peppers,alternative,5.0,9.1,7.1
+2,Rock Veteran,8,I Wanna Be Yours,Arctic Monkeys,rock,10.0,8.7,9.4
+2,Rock Veteran,9,I Want to Know What Love Is - 1999 Remaster,['Foreigner'],rock,10.0,8.8,9.4
+2,Rock Veteran,10,18 and Life,['Skid Row'],rock,10.0,8.8,9.4
+2,Rock Veteran,11,Heathens,['Twenty One Pilots'],rock,10.0,8.6,9.3
+2,Rock Veteran,12,Under the Bridge,Red Hot Chili Peppers,alternative,5.0,8.5,6.8
+2,Rock Veteran,13,Thank You,Dido,rock,10.0,8.4,9.2
+2,Rock Veteran,14,High and Dry,Radiohead,alternative,5.0,8.6,6.8
+2,Rock Veteran,15,Running Up That Hill (A Deal With God),Kate Bush,rock,10.0,7.9,9.0
+2,Rock Veteran,16,The Morning,['The Weeknd'],canadian_pop,1.0,8.6,4.8
+2,Rock Veteran,17,I'm Not In Love,['10cc'],rock,10.0,8.2,9.1
+2,Rock Veteran,18,i'm so sick of this,['guccihighwaters'],emo_rap,3.0,7.6,5.3
+2,Rock Veteran,19,Born 2 Be Great,['Lil Tjay'],brooklyn_drill,3.0,8.1,5.6
+2,Rock Veteran,20,"Danger Zone - From ""Top Gun"" Original Soundtrack",Kenny Loggins,rock,10.0,9.2,9.6
+3,Pop Mainstream,1,Unholy (feat. Kim Petras),Sam Smith;Kim Petras,pop,10.0,8.9,9.4
+3,Pop Mainstream,2,"You're On Your Own, Kid",Taylor Swift,pop,10.0,9.0,9.5
+3,Pop Mainstream,3,You should be sad,Halsey,pop,10.0,9.3,9.7
+3,Pop Mainstream,4,Pour It Up,Rihanna,pop,10.0,9.1,9.5
+3,Pop Mainstream,5,Welcome To The Party,['Pop Smoke'],brooklyn_drill,3.0,8.9,6.0
+3,Pop Mainstream,6,Got It On Me,['Pop Smoke'],brooklyn_drill,3.0,8.9,5.9
+3,Pop Mainstream,7,STUPID (feat. Yung Baby Tate),"['Ashnikko', 'Yung Baby Tate']",pop,10.0,9.3,9.6
+3,Pop Mainstream,8,Flowers,Miley Cyrus,pop,10.0,9.7,9.9
+3,Pop Mainstream,9,34+35,['Ariana Grande'],pop,10.0,9.2,9.6
+3,Pop Mainstream,10,Save Your Tears (with Ariana Grande) (Remix),The Weeknd,pop,10.0,9.5,9.7
+3,Pop Mainstream,11,Save Your Tears (Remix) (with Ariana Grande) - Bonus Track,The Weeknd,pop,10.0,9.5,9.7
+3,Pop Mainstream,12,It Ain't Me (with Selena Gomez),Kygo,pop,10.0,9.4,9.7
+3,Pop Mainstream,13,Laugh Now Cry Later (feat. Lil Durk),"['Drake', 'Lil Durk']",toronto_rap,3.0,9.3,6.1
+3,Pop Mainstream,14,Loving Is Easy,Rex Orange County,pop,10.0,9.6,9.8
+3,Pop Mainstream,15,Moral of the Story,['Ashe'],pop,10.0,8.6,9.3
+3,Pop Mainstream,16,Story of My Life,['One Direction'],pop,10.0,9.3,9.7
+3,Pop Mainstream,17,Midnight Rain,Taylor Swift,pop,10.0,8.2,9.1
+3,Pop Mainstream,18,Little Freak,Harry Styles,pop,10.0,8.5,9.3
+3,Pop Mainstream,19,Until I Found You,Stephen Sanchez,pop,10.0,8.3,9.2
+3,Pop Mainstream,20,Saturday Nights,['Khalid'],pop,10.0,8.3,9.1
+4,Hip-Hop Head,1,"Quevedo: Bzrp Music Sessions, Vol. 52",Bizarrap;Quevedo,hip-hop,10.0,9.2,9.6
+4,Hip-Hop Head,2,HAD ENOUGH (feat. Quavo & Offset),Don Toliver,rap,10.0,9.2,9.6
+4,Hip-Hop Head,3,"Arabic Kuthu - Halamithi Habibo (From ""Beast"")",Anirudh Ravichander;Jonita Gandhi,hip-hop,10.0,9.2,9.6
+4,Hip-Hop Head,4,occh1 purpl3 - feat. Marracash,tha Supreme,rap,10.0,9.6,9.8
+4,Hip-Hop Head,5,Welcome To The Party,['Pop Smoke'],brooklyn_drill,3.0,9.2,6.1
+4,Hip-Hop Head,6,"Aleman: Bzrp Music Sessions, Vol. 15",Bizarrap,rap,10.0,9.3,9.7
+4,Hip-Hop Head,7,CAPO,NLE Choppa,rap,10.0,8.8,9.4
+4,Hip-Hop Head,8,"Shakira: Bzrp Music Sessions, Vol. 53",Bizarrap,hip-hop,10.0,9.3,9.7
+4,Hip-Hop Head,9,STAR WALKIN' (League of Legends Worlds Anthem),Lil Nas X,hip-hop,10.0,9.3,9.7
+4,Hip-Hop Head,10,"Earned It (Fifty Shades Of Grey) - From The ""Fifty Shades Of Grey"" Soundtrack",['The Weeknd'],canadian_pop,5.0,8.9,6.9
+4,Hip-Hop Head,11,HIGHEST IN THE ROOM (feat. ROSALÍA & Lil Baby) - REMIX,Travis Scott,rap,10.0,8.7,9.4
+4,Hip-Hop Head,12,PUB G (feat. Branco & Larry 44),LOLO,rap,10.0,9.1,9.6
+4,Hip-Hop Head,13,Voices (feat. Oliver Tree),KSI,hip-hop,10.0,9.1,9.5
+4,Hip-Hop Head,14,Love Again,The Kid LAROI,hip-hop,10.0,8.4,9.2
+4,Hip-Hop Head,15,Heartless,The Weeknd,rap,10.0,8.9,9.4
+4,Hip-Hop Head,16,Miss You,Oliver Tree,hip-hop,10.0,9.1,9.6
+4,Hip-Hop Head,17,Flex (feat. Juice WRLD),"['Polo G', 'Juice WRLD']",melodic_rap,10.0,9.5,9.7
+4,Hip-Hop Head,18,Wishing Well,['Juice WRLD'],melodic_rap,10.0,8.9,9.5
+4,Hip-Hop Head,19,First Light,Xavier Wulf,hip-hop,10.0,9.1,9.6
+4,Hip-Hop Head,20,Reminds Me Of You,"['Juice WRLD', 'The Kid LAROI']",melodic_rap,10.0,9.3,9.7
+5,EDM/Dance Fan,1,ROXANNE,Arizona Zervas,edm,10.0,8.9,9.4
+5,EDM/Dance Fan,2,Waves - Robin Schulz Radio Edit,"['Mr. Probz', 'Robin Schulz']",edm,10.0,9.0,9.5
+5,EDM/Dance Fan,3,Diles,Bad Bunny;Ozuna;Farruko;Arcangel;Ñengo Flow;DJ Luian;Mambo Kingz,reggaeton,3.0,8.9,6.0
+5,EDM/Dance Fan,4,Futsal Shuffle 2020,Lil Uzi Vert,edm,10.0,8.7,9.4
+5,EDM/Dance Fan,5,This Girl (Kungs Vs. Cookin' On 3 Burners),"['Kungs', ""Cookin' On 3 Burners""]",edm,10.0,9.4,9.7
+5,EDM/Dance Fan,6,Grenade,Bruno Mars,edm,10.0,8.9,9.5
+5,EDM/Dance Fan,7,512,"['Mora', 'Jhay Cortez']",reggaeton,3.0,8.5,5.7
+5,EDM/Dance Fan,8,BABY OTAKU,Pablo Pesadilla;Polimá Westcoast;Nickoog Clk;Fran C,latino,3.0,9.2,6.1
+5,EDM/Dance Fan,9,Me Rehúso,Danny Ocean,latino,3.0,9.4,6.2
+5,EDM/Dance Fan,10,Berlin,Zion & Lennox;Maria Becerra,latino,3.0,9.0,6.0
+5,EDM/Dance Fan,11,LA DROGA,['Bad Bunny'],reggaeton,3.0,9.1,6.0
+5,EDM/Dance Fan,12,Dime Si Te Acuerdas,['Bad Bunny'],reggaeton,3.0,8.8,5.9
+5,EDM/Dance Fan,13,LOS APARATOS,El Alfa;Noriel;Trueno,reggaeton,3.0,8.9,5.9
+5,EDM/Dance Fan,14,Roses - Imanbek Remix,"['SAINt JHN', 'Imanbek']",electro_house,10.0,8.8,9.4
+5,EDM/Dance Fan,15,911,['Sech'],reggaeton,3.0,8.7,5.9
+5,EDM/Dance Fan,16,Oi,Lagum,edm,10.0,8.6,9.3
+5,EDM/Dance Fan,17,BLUE,Tiësto,edm,10.0,8.9,9.5
+5,EDM/Dance Fan,18,BOMBÓN,Daddy Yankee;El Alfa;Lil Jon,latino,3.0,9.0,6.0
+5,EDM/Dance Fan,19,Tus Besos,['Juanka'],reggaeton,3.0,9.0,6.0
+5,EDM/Dance Fan,20,BENDICIONES,['Bad Bunny'],reggaeton,3.0,8.7,5.8
+6,Indie Dreamer,1,I Love You So,The Walters,indie,10.0,9.1,9.5
+6,Indie Dreamer,2,865,['Morgan Wallen'],contemporary_country,3.0,9.0,6.0
+6,Indie Dreamer,3,BS,Still Woozy,indie-pop,10.0,9.3,9.7
+6,Indie Dreamer,4,Lent,Autoheart,indie-pop,10.0,8.7,9.3
+6,Indie Dreamer,5,Cloud 9,Paravi,indie,10.0,8.8,9.4
+6,Indie Dreamer,6,Blue Hair,TV Girl,indie-pop,10.0,8.6,9.3
+6,Indie Dreamer,7,Let You Love Me,Jervis Campbell,indie-pop,10.0,9.0,9.5
+6,Indie Dreamer,8,Liquid Smooth,Mitski,indie-pop,10.0,8.3,9.2
+6,Indie Dreamer,9,Don't Let Me Go,Cigarettes After Sex,indie,10.0,8.5,9.3
+6,Indie Dreamer,10,You?,Two Feet,indie-pop,10.0,8.9,9.4
+6,Indie Dreamer,11,Souvenir,boygenius,indie-pop,10.0,8.3,9.1
+6,Indie Dreamer,12,yours,ë°ì´ë¨¼ì¤ ì´ì´ Damons year,indie-pop,10.0,9.1,9.6
+6,Indie Dreamer,13,GO,Abdullah Siddiqui;Atif Aslam,indie-pop,10.0,9.2,9.6
+6,Indie Dreamer,14,Alien Blues,Vundabar,indie-pop,10.0,7.8,8.9
+6,Indie Dreamer,15,911,Ellise,indie,10.0,9.3,9.7
+6,Indie Dreamer,16,Leave Your Lover,['Sam Smith'],uk_pop,3.0,8.5,5.8
+6,Indie Dreamer,17,blue,Kamal.,indie-pop,10.0,8.3,9.1
+6,Indie Dreamer,18,Wait 2.0,NoMBe,indie-pop,10.0,8.8,9.4
+6,Indie Dreamer,19,J'aime les filles,Kate Bollinger,indie-pop,10.0,8.4,9.2
+6,Indie Dreamer,20,Oo,Up Dharma Down,indie-pop,10.0,9.1,9.6
+7,Classical/Ambient,1,I Ain't Worried,OneRepublic,piano,10.0,5.7,7.9
+7,Classical/Ambient,2,Yo No Soy Celoso,Bad Bunny,latino,3.0,5.8,4.4
+7,Classical/Ambient,3,Hold Me Closer,Elton John;Britney Spears,piano,10.0,6.2,8.1
+7,Classical/Ambient,4,A Tu Merced,Bad Bunny,latino,3.0,5.9,4.5
+7,Classical/Ambient,5,Are You Satisfied?,MARINA,alternative,3.0,6.2,4.6
+7,Classical/Ambient,6,Scar Tissue,Red Hot Chili Peppers,alternative,3.0,6.6,4.8
+7,Classical/Ambient,7,Otherside,Red Hot Chili Peppers,alternative,3.0,6.4,4.7
+7,Classical/Ambient,8,Red Roses (feat. Landon Cube),"['Lil Skies', 'Landon Cube']",underground_hip_hop,3.0,6.7,4.8
+7,Classical/Ambient,9,Party en el Barrio (feat. Duki),Paulo Londra;Duki,latino,3.0,6.0,4.5
+7,Classical/Ambient,10,2 On (feat. ScHoolboy Q),Tinashe;ScHoolboy Q,alternative,3.0,6.7,4.9
+7,Classical/Ambient,11,big city blues,"['Lil Peep', 'Cold Hart']",underground_hip_hop,3.0,6.7,4.8
+7,Classical/Ambient,12,When It Rains It Pours,['Luke Combs'],contemporary_country,3.0,6.0,4.5
+7,Classical/Ambient,13,Ghost Town,Layto;Neoni,alternative,3.0,6.4,4.7
+7,Classical/Ambient,14,Daddy Issues (Remix) feat. Syd,The Neighbourhood;Syd,alternative,3.0,7.1,5.1
+7,Classical/Ambient,15,Trouble On My Mind,"['Pusha T', 'Tyler, The Creator']",underground_hip_hop,3.0,5.1,4.1
+7,Classical/Ambient,16,Don't Go Breaking My Heart,Elton John;Kiki Dee,piano,10.0,5.9,8.0
+7,Classical/Ambient,17,West Coast,OneRepublic,piano,10.0,6.2,8.1
+7,Classical/Ambient,18,Vex Oh (feat. Eight9FLY),"['KAYTRANADA', 'GoldLink', 'Ari PenSmith', 'Eight9FLY']",underground_hip_hop,3.0,5.9,4.4
+7,Classical/Ambient,19,Six Days - Remix,DJ Shadow;Mos Def,alternative,3.0,5.0,4.0
+7,Classical/Ambient,20,Part Of The Band,The 1975,alternative,3.0,6.8,4.9
+8,Latin Lover,1,Dance Monkey,Tones and I,latin,10.0,8.8,9.4
+8,Latin Lover,2,HP,Maluma,latin,10.0,9.5,9.8
+8,Latin Lover,3,Writing on the Wall (feat. Post Malone & Cardi B),French Montana,latin,10.0,9.2,9.6
+8,Latin Lover,4,512,"['Mora', 'Jhay Cortez']",reggaeton,10.0,9.4,9.7
+8,Latin Lover,5,July,Noah Cyrus,latin,10.0,7.6,8.8
+8,Latin Lover,6,Old Town Road - Remix,Lil Nas X,latin,10.0,9.2,9.6
+8,Latin Lover,7,Enjoy Yourself (feat. Karol G),"['Pop Smoke', 'KAROL G']",brooklyn_drill,3.0,9.2,6.1
+8,Latin Lover,8,The Box,Roddy Ricch,latin,10.0,8.7,9.4
+8,Latin Lover,9,Broke In A Minute,['Tory Lanez'],toronto_rap,3.0,9.3,6.1
+8,Latin Lover,10,hot girl bummer (with Khea) - Khea Remix,blackbear,latin,10.0,9.2,9.6
+8,Latin Lover,11,Turks (feat. Travis Scott),"['NAV', 'Gunna', 'Travis Scott']",toronto_rap,3.0,8.8,5.9
+8,Latin Lover,12,Mayor Que Usted,Natti Natasha;Daddy Yankee;Wisin & Yandel,latino,10.0,8.6,9.3
+8,Latin Lover,13,What’s Next,['Drake'],toronto_rap,3.0,8.7,5.8
+8,Latin Lover,14,One Thing Right,Marshmello,latin,10.0,8.7,9.4
+8,Latin Lover,15,Adore You,Harry Styles,latin,10.0,9.4,9.7
+8,Latin Lover,16,Family,The Chainsmokers,latin,10.0,8.6,9.3
+8,Latin Lover,17,I Don't Care (with Justin Bieber),Ed Sheeran,latin,10.0,9.5,9.8
+8,Latin Lover,18,Work,"['Rihanna', 'Drake']",toronto_rap,3.0,9.3,6.2
+8,Latin Lover,19,Perfect (feat. Haris),Lucas & Steve,latin,10.0,9.4,9.7
+8,Latin Lover,20,Christian Dior,['Jhay Cortez'],reggaeton,10.0,9.3,9.6
+9,Country/Folk Fan,1,23,Chayce Beckham,country,10.0,9.1,9.6
+9,Country/Folk Fan,2,Everybody's Talkin',['Harry Nilsson'],folk,10.0,9.3,9.6
+9,Country/Folk Fan,3,2016,Sam Hunt,country,10.0,9.0,9.5
+9,Country/Folk Fan,4,Tribus Hirpeis,Emian,folk,10.0,7.7,8.8
+9,Country/Folk Fan,5,Ð¢ÑÐ¸Ð¼Ð°Ð¹,Khrystyna Soloviy,folk,10.0,9.0,9.5
+9,Country/Folk Fan,6,Be,Garrett Kato,folk,10.0,8.5,9.3
+9,Country/Folk Fan,7,If,['Bread'],folk,10.0,8.2,9.1
+9,Country/Folk Fan,8,26,Caamp,folk,10.0,8.6,9.3
+9,Country/Folk Fan,9,L,Hal,folk,10.0,8.8,9.4
+9,Country/Folk Fan,10,Skybird,['Neil Diamond'],folk,10.0,9.2,9.6
+9,Country/Folk Fan,11,Drinkaby,Cole Swindell,country,10.0,8.3,9.2
+9,Country/Folk Fan,12,100%,Senidah,folk,10.0,9.1,9.6
+9,Country/Folk Fan,13,M,Florist,folk,10.0,7.6,8.8
+9,Country/Folk Fan,14,Up,Luke Bryan,country,10.0,8.7,9.3
+9,Country/Folk Fan,15,1914,Florist,folk,10.0,7.9,9.0
+9,Country/Folk Fan,16,2020,Mitch Rossell,country,10.0,8.9,9.5
+9,Country/Folk Fan,17,1953,The National Parks,folk,10.0,8.6,9.3
+9,Country/Folk Fan,18,We,Bon Iver,folk,10.0,8.6,9.3
+9,Country/Folk Fan,19,Spirit,Judah & the Lion,folk,10.0,8.9,9.5
+9,Country/Folk Fan,20,ÐÐ¾Ð»ÑÑÐºÐ¾-Ð¿Ð¾Ð»Ðµ,The Red Army Choir,folk,10.0,8.4,9.2
+10,K-Pop/J-Pop Fan,1,OMG,NewJeans,k-pop,10.0,9.4,9.7
+10,K-Pop/J-Pop Fan,2,ON,['BTS'],k-pop,10.0,9.2,9.6
+10,K-Pop/J-Pop Fan,3,Nos Comemos Vivos,Maluma;Chencho Corleone,latino,3.0,9.3,6.1
+10,K-Pop/J-Pop Fan,4,Nos Comemos (feat. Ozuna),Tiago PZK;Ozuna,latino,3.0,9.5,6.2
+10,K-Pop/J-Pop Fan,5,Aguacero,Bad Bunny,latino,3.0,8.9,6.0
+10,K-Pop/J-Pop Fan,6,Volando - Remix,Mora;Bad Bunny;Sech,latino,3.0,9.4,6.2
+10,K-Pop/J-Pop Fan,7,ON,BTS,k-pop,10.0,9.2,9.6
+10,K-Pop/J-Pop Fan,8,134340,BTS,k-pop,10.0,9.5,9.7
+10,K-Pop/J-Pop Fan,9,134340,['BTS'],k-pop,10.0,9.5,9.7
+10,K-Pop/J-Pop Fan,10,2019,"['Martin Jensen', 'Georgia Ku']",electro_house,3.0,9.3,6.1
+10,K-Pop/J-Pop Fan,11,DM,fromis_9,k-pop,10.0,9.5,9.7
+10,K-Pop/J-Pop Fan,12,21,DEAN,k-pop,10.0,9.3,9.7
+10,K-Pop/J-Pop Fan,13,NO ONE,"['LeeHi', 'B.I']",k-pop,10.0,9.3,9.6
+10,K-Pop/J-Pop Fan,14,Frost,TOMORROW X TOGETHER,k-pop,10.0,9.3,9.6
+10,K-Pop/J-Pop Fan,15,Todo De Ti,Rauw Alejandro,latino,3.0,9.3,6.1
+10,K-Pop/J-Pop Fan,16,00:00 (Zero O’Clock),['BTS'],k-pop,10.0,8.8,9.4
+10,K-Pop/J-Pop Fan,17,00:00 (Zero O’Clock),BTS,k-pop,10.0,8.8,9.4
+10,K-Pop/J-Pop Fan,18,Pandora's Box,j-hope,k-pop,10.0,8.8,9.4
+10,K-Pop/J-Pop Fan,19,Outro: Tear,BTS,k-pop,10.0,9.1,9.5
+10,K-Pop/J-Pop Fan,20,Ð¡Ð»ÑÑÐ°Ð¹Ð½Ð¾ÑÑÑ,Sam Cosmo,k-pop,10.0,8.4,9.2

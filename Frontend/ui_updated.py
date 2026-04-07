@@ -279,6 +279,26 @@ GENRE_MAP = {
     "Folk": "folk", "Soul / Funk": "soul", "Dance": "dance",
 }
 
+GENRE_ALIASES = {
+    "rock": ["rock", "alt-rock", "alternative", "modern_rock", "classic_rock",
+             "hard_rock", "punk", "grunge", "garage_rock"],
+    "hip-hop": ["hip-hop", "hip_hop", "trap", "melodic_rap", "brooklyn_drill",
+                "underground_hip_hop"],
+    "rap": ["rap", "melodic_rap", "emo_rap", "trap"],
+    "electro": ["electro", "edm", "electro_house", "electronic", "house",
+                "trance", "dubstep"],
+    "jazz": ["jazz", "blues", "smooth_jazz"],
+    "r&b": ["r&b", "r-b", "neo_soul", "indie_soul"],
+    "soul": ["soul", "funk", "neo_soul", "indie_soul"],
+    "dance": ["dance", "disco", "house", "edm"],
+    "folk": ["folk", "indie_folk", "singer-songwriter"],
+    "country": ["country", "contemporary_country"],
+    "metal": ["metal", "heavy_metal", "death_metal", "metalcore"],
+    "classical": ["classical", "ambient", "piano"],
+    "k-pop": ["k-pop", "j-pop"],
+    "indie": ["indie", "indie-pop", "indie_folk", "indie_soul"],
+}
+
 KEY_MAP = {
     0: "C", 1: "C♯/D♭", 2: "D", 3: "D♯/E♭", 4: "E", 5: "F",
     6: "F♯/G♭", 7: "G", 8: "G♯/A♭", 9: "A", 10: "A♯/B♭", 11: "B",
@@ -819,9 +839,12 @@ st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
 
 # ── Song picker ──
 if genre_groups and "genre" in catalog.columns:
-    genre_keys  = [GENRE_MAP.get(g, "").lower() for g in genre_groups]
-    mask        = catalog["genre"].str.lower().apply(
-        lambda v: any(k in v for k in genre_keys) if pd.notna(v) else False
+    alias_keys = set()
+    for g in genre_groups:
+        base = GENRE_MAP.get(g, "").lower()
+        alias_keys.update(GENRE_ALIASES.get(base, [base]))
+    mask = catalog["genre"].str.lower().apply(
+        lambda v: any(k in v for k in alias_keys) if pd.notna(v) else False
     )
     genre_catalog = catalog[mask].copy() if mask.any() else catalog.copy()
 else:
