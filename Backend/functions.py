@@ -12,12 +12,16 @@ from __future__ import annotations
 import os
 import re
 import logging
+from collections import Counter
 import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from langdetect import detect, LangDetectException
+from langdetect import DetectorFactory, detect, LangDetectException
+
+# langdetect is randomized; a fixed seed keeps detections (and so playlists) reproducible.
+DetectorFactory.seed = 0
 
 log = logging.getLogger("music_matcher.backend")
 
@@ -61,6 +65,21 @@ def _detect_lang(text: str) -> str | None:
         return detect(text)
     except LangDetectException:
         return None
+
+
+def detect_seed_language(titles) -> str | None:
+    """Return the language most seed titles share, or None if there is no majority.
+
+    Detection on short titles is unreliable (e.g. "OMG" comes back as
+    Portuguese), so a language is only trusted when more than half of the
+    seeds agree on it.
+    """
+    titles = [str(t) for t in titles]
+    votes = [lang for lang in map(_detect_lang, titles) if lang]
+    if not votes:
+        return None
+    lang, count = Counter(votes).most_common(1)[0]
+    return lang if count > len(titles) / 2 else None
 
 _ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 _CHECKPOINT_PATH = os.path.join(_ROOT, "Model", "checkpoints", "aae_encoder_500k.pt")
@@ -380,7 +399,7 @@ def build_playlist(
 
 
 def build_playlist_from_seeds(
-    seed_specs_list, k: int = 50, metric: str = "euclidean", n_genres: int = 5,
+    seed_specs_list, k: int = 50, metric: str = "euclidean", n_genres: int = 3,
     seed_genres=None, seed_language=None,
 ):
     """

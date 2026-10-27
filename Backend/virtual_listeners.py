@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from functions import (
     build_playlist_from_seeds,
     _get_songs_df,
-    _detect_lang,
+    detect_seed_language,
     FEATURE_NAMES,
 )
 
@@ -201,9 +201,15 @@ LISTENERS = [
 # SEED SONG SELECTION
 # ────────────────────────────────────────────────────────────────
 
-def select_seeds(listener: dict, df: pd.DataFrame, n: int = 3) -> pd.DataFrame:
-    """Pick the top-*n* most popular songs whose genre matches
-    any of the listener's seed_genre_keys."""
+def select_seeds(listener: dict, df: pd.DataFrame, n: int = 3, pool: int = 200) -> pd.DataFrame:
+    """Pick *n* seed songs that a fan with this listener's taste would choose.
+
+    Candidates are songs whose genre matches any of the listener's
+    seed_genre_keys. Catalog genre tags are loose, so the most popular
+    matches are often hits that don't sound like the genre (Post Malone is
+    tagged "edm"). Instead, take the *pool* most popular matches and keep the
+    *n* whose audio features best fit the listener's ideal_features.
+    """
     keys = listener["seed_genre_keys"]
     mask = df["genre"].str.lower().apply(
         lambda g: any(k in g for k in keys) if pd.notna(g) else False
@@ -221,8 +227,11 @@ def select_seeds(listener: dict, df: pd.DataFrame, n: int = 3) -> pd.DataFrame:
         log.error("No candidates at all for %s", listener["name"])
         return pd.DataFrame()
 
-    candidates = candidates.sort_values("popularity", ascending=False, na_position="last")
-    return candidates.head(n)
+    candidates = candidates.sort_values("popularity", ascending=False, na_position="last").head(pool)
+    fit = candidates.apply(
+        lambda row: _feature_score(row.to_dict(), listener["ideal_features"]), axis=1
+    )
+    return candidates.loc[fit.sort_values(ascending=False).index[:n]]
 
 
 # ────────────────────────────────────────────────────────────────
@@ -359,12 +368,7 @@ def run_all_tests(playlist_size: int = 20):
 
         seed_genres = seed_df["genre"].dropna().unique().tolist()
 
-        lang_votes = [
-            _detect_lang(str(t))
-            for t in seed_df["track_name"].dropna()
-            if _detect_lang(str(t)) is not None
-        ]
-        seed_language = Counter(lang_votes).most_common(1)[0][0] if lang_votes else None
+        seed_language = detect_seed_language(seed_df["track_name"].dropna())
         log.info("  Detected language: %s", seed_language)
 
         songs = build_playlist_from_seeds(

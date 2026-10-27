@@ -7,7 +7,6 @@ import os
 import sys
 import requests
 from datetime import datetime, timezone
-from collections import Counter
 import logging
 
 logging.basicConfig(
@@ -21,7 +20,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'Model'))
 from feature_io import save_vector, load_vector_with_meta, VECTOR_PATH
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'Backend'))
-from functions import build_playlist, build_playlist_from_seeds, _detect_lang
+from functions import build_playlist, build_playlist_from_seeds, detect_seed_language
 
 
 # ─── PAGE CONFIG ──────────────────────────────────────────────────────────────
@@ -909,12 +908,7 @@ if st.button("✨ Generate Playlist", type="primary", use_container_width=False)
                 seed_df["genre"].dropna().unique().tolist()
                 if "genre" in seed_df.columns else None
             )
-            _lang_votes = [
-                _detect_lang(str(name))
-                for name in seed_df["track_name"].dropna()
-                if _detect_lang(str(name)) is not None
-            ]
-            seed_language = Counter(_lang_votes).most_common(1)[0][0] if _lang_votes else None
+            seed_language = detect_seed_language(seed_df["track_name"].dropna())
 
             raw_results = build_playlist_from_seeds(
                 seed_specs_list, k=playlist_size,
